@@ -1,0 +1,30 @@
+services:
+    app:
+        build:
+            context: .
+        container_name: app
+        environment:
+            NODE_ENV: development
+            DATABASE_URL: ${DATABASE_URL}
+            SESSION_SECRET: ${SESSION_SECRET}
+        ports:
+            - "3000:3000"
+        volumes:
+            - .:/app
+        depends_on:
+            - database
+
+    database:
+        image: postgres:17.6-trixie
+        container_name: postgres
+        environment:
+            POSTGRES_USER: ${POSTGRES_USER:-postgres}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+            POSTGRES_DB: ${POSTGRES_DB:-postgres}
+        ports:
+            - "5432:5432"
+        volumes:
+            - pgdata:/var/lib/postgresql/data
+        shm_size: 128mb
+volumes:
+    pgdata:

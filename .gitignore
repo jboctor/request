@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# Build outputs
+build/
+.vite/
+
+# TypeScript
+*.tsbuildinfo
+
+# React Router
+.react-router/
+
+# Database
+drizzle/
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+
+# Temporary files
+*.tmp
