@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "react-router build",
-    "create-user": "dotenv -- tsx scripts/create-user.ts",
+    "manage-user": "dotenv -- tsx scripts/manage-user.ts",
     "db:generate": "dotenv -- drizzle-kit generate",
     "db:migrate": "dotenv -- drizzle-kit migrate",
     "dev": "dotenv -- node server.js",

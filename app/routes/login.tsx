@@ -43,6 +43,7 @@ export async function action({ request, context }: Route.ActionArgs) {
         email: true,
         salt: true,
         password: true,
+        isAdmin: true
       },
     });
 
