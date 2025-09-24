@@ -1,9 +1,5 @@
 import type { Route } from "./+types/auth-layout";
-import { useLoaderData, Outlet, Form, redirect, Link, useLocation } from "react-router";
-import type { InferSelectModel } from "drizzle-orm";
-import type { user } from "~/database/schema";
-
-type User = InferSelectModel<typeof user>;
+import { Outlet, Form, redirect, Link, useLocation } from "react-router";
 
 function checkAuth(args?: Route.LoaderArgs) {
   const user = args?.context?.session?.user;
@@ -15,21 +11,18 @@ function checkAuth(args?: Route.LoaderArgs) {
 
 export async function loader(args: Route.LoaderArgs) {
   const user = checkAuth(args);
-  const currentPath = new URL(args.request.url).pathname;
 
   if (!user) {
-    // If we're on the home route, don't redirect
-    if (currentPath === "/") {
-      return { user: null };
-    }
-    // Otherwise, redirect to home page
     return redirect("/");
   }
+
   return { user };
 }
 
-export default function AuthLayout() {
-  const { user } = useLoaderData() as { user: User };
+export default function AuthLayout({
+  loaderData
+}: Route.ComponentProps) {
+  const { user } = loaderData;
   const location = useLocation();
 
   return (

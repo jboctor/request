@@ -1,4 +1,4 @@
-import { integer, pgTable, varchar, pgEnum, boolean } from "drizzle-orm/pg-core";
+import { integer, pgTable, varchar, pgEnum, boolean, timestamp } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -17,4 +17,6 @@ export const request = pgTable("request", {
   mediaType: requestMediaTypeEnum().notNull(),
   title: varchar({ length: 255 }).notNull(),
   status: requestStatusEnum().notNull().default("pending"),
+  dateCreated: timestamp().notNull().defaultNow(),
+  dateCompleted: timestamp(),
 });

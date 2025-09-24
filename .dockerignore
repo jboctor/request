@@ -1,4 +1,38 @@
+# Build outputs
 .react-router
 build
+*.tsbuildinfo
+
+# Dependencies
 node_modules
+
+# Environment files
+.env
+.env.*
+
+# Development files
 README.md
+docker-compose.yaml
+.dockerignore
+
+# Git
+.git
+.gitignore
+
+# IDE/Editor files
+.vscode
+.idea
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp

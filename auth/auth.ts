@@ -22,8 +22,7 @@ export class AuthManager {
       if (err) throw err;
     });
   }
-
-  // Verify a password against hash, using salt and pepper
+  
   logout(session: Session): void {
     session.destroy((err: any) => {
       if (err) throw err;
