@@ -1,6 +1,6 @@
 import { database } from "~/database/context";
 import { request as requestTable, requestMediaTypeEnum } from "~/database/schema";
-import { eq, asc, desc, and, isNull } from "drizzle-orm";
+import { eq, asc, desc, and } from "drizzle-orm";
 
 export interface CreateRequestData {
   userId: number;
@@ -39,7 +39,7 @@ export class RequestService {
     return await this.db
       .select()
       .from(requestTable)
-      .where(and(eq(requestTable.userId, userId), isNull(requestTable.dateDeleted)))
+      .where(eq(requestTable.userId, userId))
       .orderBy(desc(requestTable.dateCreated));
   }
 

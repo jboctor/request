@@ -1,9 +1,10 @@
 import { database } from "~/database/context";
 import { PasswordManager } from "~/auth/password";
 import { AuthManager } from "~/auth/auth";
+import { Button } from "~/components/Button";
 
 import type { Route } from "./+types/login";
-import { Form, useNavigation, useActionData } from "react-router";
+import { Form, useNavigation } from "react-router";
 import { redirect } from "react-router";
 
 const authManager = new AuthManager(new PasswordManager());
@@ -102,13 +103,13 @@ export default function Home({ actionData, loaderData }: Route.ComponentProps) {
                 required
                 className="w-full dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:focus:ring-blue-500 h-10 px-3 rounded-lg border border-gray-200 focus:ring-1 focus:ring-blue-500"
               />
-              <button
+              <Button
                 type="submit"
+                variant="primary"
                 disabled={navigation.state === "submitting"}
-                className="w-full h-10 px-3 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
               >
                 Sign In
-              </button>
+              </Button>
             </Form>
           </section>
         </div>

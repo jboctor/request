@@ -5,6 +5,7 @@ import { requestMediaTypeEnum } from "~/database/schema";
 import { redirect } from "react-router";
 import { RequestService } from "~/services/requestService";
 import { Button } from "~/components/Button";
+import { Requests } from "~/components/Requests";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -94,6 +95,9 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 
 export default function Dashboard({ actionData, loaderData }: Route.ComponentProps) {
   const [activeTab, setActiveTab] = useState<"request" | "view">("request");
+  const [showPending, setShowPending] = useState(true);
+  const [showCompleted, setShowCompleted] = useState(false);
+  const [showDeleted, setShowDeleted] = useState(false);
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -104,10 +108,10 @@ export default function Dashboard({ actionData, loaderData }: Route.ComponentPro
   }, []);
 
   useEffect(() => {
-    if (actionData?.success) {
+    if (actionData?.success && navigation.state === "idle") {
       handleTabChange("view");
     }
-  }, [actionData?.success]);
+  }, [actionData?.success, navigation.state]);
 
   const handleTabChange = (tab: "request" | "view") => {
     setActiveTab(tab);
@@ -186,78 +190,55 @@ export default function Dashboard({ actionData, loaderData }: Route.ComponentPro
                       className="w-full dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:focus:ring-blue-500 h-10 px-3 rounded-lg border border-gray-200 focus:ring-1 focus:ring-blue-500"
                     />
                   </div>
-                  <button
+                  <Button
                     type="submit"
+                    variant="primary"
                     disabled={navigation.state === "submitting"}
-                    className="w-full h-10 px-3 text-white bg-blue-500 rounded-lg hover:bg-blue-600 disabled:opacity-50"
                   >
                     {navigation.state === "submitting" ? "Submitting..." : "Submit Request"}
-                  </button>
+                  </Button>
                 </Form>
               </div>
             ) : (
               <div>
                 <h2 className="text-center text-lg font-medium mb-4">Your Requests</h2>
-                <div className="space-y-3">
-                  {loaderData?.requests && loaderData.requests.length > 0 ? (
-                    loaderData.requests.map((request) => {
-                      const isCompleted = request.dateCompleted !== null;
-                      const status = isCompleted ? "completed" : "pending";
 
-                      return (
-                        <div key={request.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <h3 className="font-medium">{request.title}</h3>
-                              <p className="text-sm text-gray-600 dark:text-gray-400 capitalize">
-                                {request.mediaType}
-                              </p>
-                              <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                                Requested on {new Date(request.dateCreated).toLocaleString()}
-                              </p>
-                              {isCompleted && request.dateCompleted && (
-                                <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                                  Completed on {new Date(request.dateCompleted).toLocaleString()}
-                                </p>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <span className={`text-xs px-2 py-1 rounded-full ${
-                                status === "pending"
-                                  ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-                                  : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                              }`}>
-                                {status === "pending" ? "Pending" : "Completed"}
-                              </span>
-                              {status === "pending" && (
-                                <Form method="post" className="inline">
-                                  <input type="hidden" name="requestId" value={request.id} />
-                                  <input type="hidden" name="action" value="delete" />
-                                  <Button
-                                    type="submit"
-                                    variant="alert"
-                                    disabled={navigation.state === "submitting"}
-                                    onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                                      if (!confirm("Are you sure you want to delete this request?")) {
-                                        e.preventDefault();
-                                      }
-                                    }}
-                                  >
-                                    Delete
-                                  </Button>
-                                </Form>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })
-                  ) : (
-                    <div className="text-center text-gray-500 dark:text-gray-400 py-8">
-                      No requests found. Submit your first request!
-                    </div>
-                  )}
+                {/* Filter Controls */}
+                <div className="flex justify-center gap-4 mb-4">
+                  <Button
+                    variant={showPending ? "warning" : "info"}
+                    onClick={() => setShowPending(!showPending)}
+                  >
+                    {showPending ? "Hide" : "Show"} Pending
+                  </Button>
+                  <Button
+                    variant={showCompleted ? "success" : "info"}
+                    onClick={() => setShowCompleted(!showCompleted)}
+                  >
+                    {showCompleted ? "Hide" : "Show"} Completed
+                  </Button>
+                  <Button
+                    variant={showDeleted ? "alert" : "info"}
+                    onClick={() => setShowDeleted(!showDeleted)}
+                  >
+                    {showDeleted ? "Hide" : "Show"} Deleted
+                  </Button>
                 </div>
+
+                {actionData?.error && (
+                  <div className="text-red-600 text-center mb-4">{actionData.error}</div>
+                )}
+                {actionData?.success && (
+                  <div className="text-green-600 text-center mb-4">{actionData.success}</div>
+                )}
+            
+                <Requests
+                  requests={loaderData?.requests || []}
+                  showPending={showPending}
+                  showCompleted={showCompleted}
+                  showDeleted={showDeleted}
+                  isAdmin={false}
+                />
               </div>
             )}
           </section>

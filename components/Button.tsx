@@ -1,6 +1,6 @@
 import React from 'react';
 
-type ButtonVariant = 'info' | 'success' | 'alert';
+type ButtonVariant = 'primary' | 'secondary' | 'info' | 'success' | 'warning' | 'alert';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant: ButtonVariant;
@@ -8,12 +8,24 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles = {
+  primary: {
+    base: 'w-full h-10 px-3 text-white bg-blue-500',
+    hover: 'hover:bg-blue-600'
+  },
+  secondary: {
+    base: 'text-gray-700 dark:text-gray-300',
+    hover: 'hover:bg-gray-100 dark:hover:bg-gray-800'
+  },
   info: {
     base: 'bg-gray-100 border border-gray-300 text-gray-700 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300',
     hover: 'hover:opacity-80'
   },
   success: {
     base: 'bg-green-100 border border-green-300 text-green-800 dark:bg-green-900 dark:border-green-700 dark:text-green-200',
+    hover: 'hover:opacity-80'
+  },
+  warning: {
+    base: 'bg-yellow-100 border border-yellow-300 text-yellow-800 dark:bg-yellow-900 dark:border-yellow-700 dark:text-yellow-200',
     hover: 'hover:opacity-80'
   },
   alert: {
@@ -24,7 +36,7 @@ const variantStyles = {
 
 export function Button({ variant, children, className = '', disabled, ...props }: ButtonProps) {
   const variantStyle = variantStyles[variant];
-  const baseClasses = 'text-sm px-3 py-1 rounded disabled:opacity-50';
+  const baseClasses = 'text-sm px-3 py-1 rounded-lg disabled:opacity-50';
 
   const combinedClassName = [
     baseClasses,

@@ -1,5 +1,6 @@
 import type { Route } from "./+types/auth-layout";
 import { Outlet, Form, redirect, Link, useLocation } from "react-router";
+import { Button } from "~/components/Button";
 
 function checkAuth(args?: Route.LoaderArgs) {
   const user = args?.context?.session?.user;
@@ -58,12 +59,12 @@ export default function AuthLayout({
           )}
         </div>
         <Form method="post" action="/logout">
-          <button
+          <Button
             type="submit"
-            className="px-3 py-1 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+            variant="secondary"
           >
             Logout
-          </button>
+          </Button>
         </Form>
       </header>
       <Outlet />

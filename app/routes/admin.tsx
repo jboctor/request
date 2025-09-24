@@ -1,8 +1,8 @@
 import type { Route } from "./+types/admin";
-import { Form, useNavigation } from "react-router";
 import { useState } from "react";
 import { RequestService } from "~/services/requestService";
 import { Button } from "~/components/Button";
+import { Requests } from "~/components/Requests";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -65,7 +65,7 @@ export async function loader({}: Route.LoaderArgs) {
 }
 
 export default function Admin({ actionData, loaderData }: Route.ComponentProps) {
-  const navigation = useNavigation();
+  const [showPending, setShowPending] = useState(true);
   const [showCompleted, setShowCompleted] = useState(false);
   const [showDeleted, setShowDeleted] = useState(false);
 
@@ -84,6 +84,12 @@ export default function Admin({ actionData, loaderData }: Route.ComponentProps) 
 
             {/* Filter Controls */}
             <div className="flex justify-center gap-4 mb-4">
+              <Button
+                variant={showPending ? "warning" : "info"}
+                onClick={() => setShowPending(!showPending)}
+              >
+                {showPending ? "Hide" : "Show"} Pending
+              </Button>
               <Button
                 variant={showCompleted ? "success" : "info"}
                 onClick={() => setShowCompleted(!showCompleted)}
@@ -104,98 +110,14 @@ export default function Admin({ actionData, loaderData }: Route.ComponentProps) 
             {actionData?.success && (
               <div className="text-green-600 text-center mb-4">{actionData.success}</div>
             )}
-            <div className="space-y-3">
-              {loaderData?.requests && loaderData.requests.length > 0 ? (
-                loaderData.requests
-                  .filter((request) => {
-                    const isCompleted = request.dateCompleted !== null;
-                    const isDeleted = request.dateDeleted !== null;
-
-                    if (isDeleted) return showDeleted;
-
-                    if (isCompleted) return showCompleted || false;
-
-                    return !isCompleted && !isDeleted;
-                  })
-                  .map((request) => {
-                  const isCompleted = request.dateCompleted !== null;
-                  const isDeleted = request.dateDeleted !== null;
-                  const status = isDeleted ? "deleted" : (isCompleted ? "completed" : "pending");
-
-                  return (
-                    <div key={request.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                      <div className="flex justify-between items-center">
-                        <div className="flex-1">
-                          <h3 className="font-medium">{request.title}</h3>
-                          <p className="text-sm text-gray-600 dark:text-gray-400 capitalize">
-                            {request.mediaType}
-                          </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                            Requested on {new Date(request.dateCreated).toLocaleString()}
-                          </p>
-                          {isCompleted && request.dateCompleted && (
-                            <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                              Completed on {new Date(request.dateCompleted).toLocaleString()}
-                            </p>
-                          )}
-                          {isDeleted && request.dateDeleted && (
-                            <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                              Deleted on {new Date(request.dateDeleted).toLocaleString()}
-                            </p>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span className={`text-xs px-2 py-1 rounded-full ${
-                            status === "pending"
-                              ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-                              : status === "completed"
-                                ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                                : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                          }`}>
-                            {status === "pending" ? "Pending" : status === "completed" ? "Completed" : "Deleted"}
-                          </span>
-                          {status === "pending" && (
-                            <div className="flex gap-2">
-                              <Form method="post" className="inline">
-                                <input type="hidden" name="requestId" value={request.id} />
-                                <input type="hidden" name="action" value="complete" />
-                                <Button
-                                  type="submit"
-                                  variant="success"
-                                  disabled={navigation.state === "submitting"}
-                                >
-                                  Mark Complete
-                                </Button>
-                              </Form>
-                              <Form method="post" className="inline">
-                                <input type="hidden" name="requestId" value={request.id} />
-                                <input type="hidden" name="action" value="delete" />
-                                <Button
-                                  type="submit"
-                                  variant="alert"
-                                  disabled={navigation.state === "submitting"}
-                                  onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                                    if (!confirm("Are you sure you want to delete this request?")) {
-                                      e.preventDefault();
-                                    }
-                                  }}
-                                >
-                                  Delete
-                                </Button>
-                                </Form>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="text-center text-gray-500 dark:text-gray-400 py-8">
-                  No requests found.
-                </div>
-              )}
-            </div>
+            
+            <Requests
+              requests={loaderData?.requests || []}
+              showPending={showPending}
+              showCompleted={showCompleted}
+              showDeleted={showDeleted}
+              isAdmin={true}
+            />
           </section>
         </div>
       </div>
