@@ -8,15 +8,14 @@ export const user = pgTable("user", {
   isAdmin: boolean().notNull().default(false),
 });
 
-export const requestMediaTypeEnum = pgEnum('request_media_type', ['book', 'movie', 'tv-show']);
-export const requestStatusEnum = pgEnum('request_status', ['pending', 'completed']);
+export const requestMediaTypeEnum = pgEnum('request_media_type', ['Book', 'Movie', 'TV Show']);
 
 export const request = pgTable("request", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   userId: integer().notNull().references(() => user.id),
   mediaType: requestMediaTypeEnum().notNull(),
   title: varchar({ length: 255 }).notNull(),
-  status: requestStatusEnum().notNull().default("pending"),
   dateCreated: timestamp().notNull().defaultNow(),
   dateCompleted: timestamp(),
+  dateDeleted: timestamp(),
 });

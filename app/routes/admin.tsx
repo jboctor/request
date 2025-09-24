@@ -1,8 +1,9 @@
 import type { Route } from "./+types/admin";
 import { Form, useNavigation } from "react-router";
+import { useState, useEffect } from "react";
 import { database } from "~/database/context";
 import { request as requestTable } from "~/database/schema";
-import { eq, asc } from "drizzle-orm";
+import { eq, asc, desc } from "drizzle-orm";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -20,7 +21,7 @@ export async function action({ request, context }: Route.ActionArgs) {
     return { error: "Missing request ID or action" };
   }
 
-  if (action !== "complete") {
+  if (action !== "complete" && action !== "delete") {
     return { error: "Invalid action" };
   }
 
@@ -32,28 +33,65 @@ export async function action({ request, context }: Route.ActionArgs) {
       return { error: "Invalid request ID" };
     }
 
-    // Update request status to completed
-    const [updatedRequest] = await db
-      .update(requestTable)
-      .set({ status: "completed", dateCompleted: new Date() })
-      .where(eq(requestTable.id, id))
-      .returning({
-        id: requestTable.id,
-        title: requestTable.title
-      });
+    if (action === "complete") {
+      const [updatedRequest] = await db
+        .update(requestTable)
+        .set({ dateCompleted: new Date() })
+        .where(eq(requestTable.id, id))
+        .returning({
+          id: requestTable.id,
+          title: requestTable.title
+        });
 
-    if (!updatedRequest) {
-      return { error: "Request not found" };
+      if (!updatedRequest) {
+        return { error: "Request not found" };
+      }
+
+      return { success: `Request "${updatedRequest.title}" marked as completed` };
+    } else if (action === "delete") {
+      // Check if request is already completed
+      const [existingRequest] = await db
+        .select({
+          id: requestTable.id,
+          title: requestTable.title,
+          dateCompleted: requestTable.dateCompleted
+        })
+        .from(requestTable)
+        .where(eq(requestTable.id, id))
+        .limit(1);
+
+      if (!existingRequest) {
+        return { error: "Request not found" };
+      }
+
+      if (existingRequest.dateCompleted) {
+        return { error: "Cannot delete completed requests" };
+      }
+
+      const [deletedRequest] = await db
+        .update(requestTable)
+        .set({ dateDeleted: new Date() })
+        .where(eq(requestTable.id, id))
+        .returning({
+          id: requestTable.id,
+          title: requestTable.title
+        });
+
+      if (!deletedRequest) {
+        return { error: "Request not found" };
+      }
+
+      return { success: `Request "${deletedRequest.title}" deleted successfully` };
     }
 
-    return { success: `Request "${updatedRequest.title}" marked as completed` };
+    return { error: "Invalid action" };
   } catch (error) {
     console.error("Error updating request:", error);
     return { error: "Failed to update request status" };
   }
 }
 
-export async function loader({ request, context }: Route.LoaderArgs) {
+export async function loader({}: Route.LoaderArgs) {
   try {
     const db = database();
 
@@ -62,14 +100,14 @@ export async function loader({ request, context }: Route.LoaderArgs) {
         id: requestTable.id,
         title: requestTable.title,
         mediaType: requestTable.mediaType,
-        status: requestTable.status,
         userId: requestTable.userId,
         dateCreated: requestTable.dateCreated,
-        dateCompleted: requestTable.dateCompleted
+        dateCompleted: requestTable.dateCompleted,
+        dateDeleted: requestTable.dateDeleted
       })
       .from(requestTable)
       .orderBy(
-        asc(requestTable.status),
+        desc(requestTable.dateCompleted),
         asc(requestTable.dateCreated)
       );
 
@@ -82,6 +120,8 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 
 export default function Admin({ actionData, loaderData }: Route.ComponentProps) {
   const navigation = useNavigation();
+  const [showCompleted, setShowCompleted] = useState(false);
+  const [showDeleted, setShowDeleted] = useState(false);
 
   return (
     <main className="flex items-center justify-center pt-16 pb-4">
@@ -95,6 +135,31 @@ export default function Admin({ actionData, loaderData }: Route.ComponentProps) 
         <div className="max-w-[700px] w-full space-y-6 px-4">
           <section className="rounded-3xl border border-gray-200 p-6 dark:border-gray-700 space-y-4">
             <h2 className="text-center text-lg font-medium mb-4">All Requests</h2>
+
+            {/* Filter Controls */}
+            <div className="flex justify-center gap-4 mb-4">
+              <button
+                onClick={() => setShowCompleted(!showCompleted)}
+                className={`px-3 py-1 text-sm rounded border ${
+                  showCompleted
+                    ? "bg-green-100 border-green-300 text-green-800 dark:bg-green-900 dark:border-green-700 dark:text-green-200"
+                    : "bg-gray-100 border-gray-300 text-gray-700 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300"
+                } hover:opacity-80`}
+              >
+                {showCompleted ? "Hide" : "Show"} Completed
+              </button>
+              <button
+                onClick={() => setShowDeleted(!showDeleted)}
+                className={`px-3 py-1 text-sm rounded border ${
+                  showDeleted
+                    ? "bg-red-100 border-red-300 text-red-800 dark:bg-red-900 dark:border-red-700 dark:text-red-200"
+                    : "bg-gray-100 border-gray-300 text-gray-700 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300"
+                } hover:opacity-80`}
+              >
+                {showDeleted ? "Hide" : "Show"} Deleted
+              </button>
+            </div>
+
             {actionData?.error && (
               <div className="text-red-600 text-center mb-4">{actionData.error}</div>
             )}
@@ -103,48 +168,90 @@ export default function Admin({ actionData, loaderData }: Route.ComponentProps) 
             )}
             <div className="space-y-3">
               {loaderData?.requests && loaderData.requests.length > 0 ? (
-                loaderData.requests.map((request) => (
-                  <div key={request.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                    <div className="flex justify-between items-center">
-                      <div className="flex-1">
-                        <h3 className="font-medium">{request.title}</h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 capitalize">
-                          {request.mediaType.replace('-', ' ')}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                          Requested on {new Date(request.dateCreated).toLocaleString()}
-                        </p>
-                        {request.status === "completed" && request.dateCompleted && (
-                          <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                            Completed on {new Date(request.dateCompleted).toLocaleString()}
+                loaderData.requests
+                  .filter((request) => {
+                    const isCompleted = request.dateCompleted !== null;
+                    const isDeleted = request.dateDeleted !== null;
+
+                    if (isDeleted) return showDeleted;
+
+                    if (isCompleted) return showCompleted || false;
+
+                    return !isCompleted && !isDeleted;
+                  })
+                  .map((request) => {
+                  const isCompleted = request.dateCompleted !== null;
+                  const isDeleted = request.dateDeleted !== null;
+                  const status = isDeleted ? "deleted" : (isCompleted ? "completed" : "pending");
+
+                  return (
+                    <div key={request.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                      <div className="flex justify-between items-center">
+                        <div className="flex-1">
+                          <h3 className="font-medium">{request.title}</h3>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 capitalize">
+                            {request.mediaType}
                           </p>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className={`text-xs px-2 py-1 rounded-full ${
-                          request.status === "pending"
-                            ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-                            : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                        }`}>
-                          {request.status === "pending" ? "Pending" : "Completed"}
-                        </span>
-                        {request.status === "pending" && (
-                          <Form method="post" className="inline">
-                            <input type="hidden" name="requestId" value={request.id} />
-                            <input type="hidden" name="action" value="complete" />
-                            <button
-                              type="submit"
-                              disabled={navigation.state === "submitting"}
-                              className="text-sm px-3 py-1 text-white bg-green-500 rounded hover:bg-green-600 disabled:opacity-50"
-                            >
-                              Mark Complete
-                            </button>
-                          </Form>
-                        )}
+                          <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                            Requested on {new Date(request.dateCreated).toLocaleString()}
+                          </p>
+                          {isCompleted && request.dateCompleted && (
+                            <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                              Completed on {new Date(request.dateCompleted).toLocaleString()}
+                            </p>
+                          )}
+                          {isDeleted && request.dateDeleted && (
+                            <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                              Deleted on {new Date(request.dateDeleted).toLocaleString()}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className={`text-xs px-2 py-1 rounded-full ${
+                            status === "pending"
+                              ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                              : status === "completed"
+                                ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                          }`}>
+                            {status === "pending" ? "Pending" : status === "completed" ? "Completed" : "Deleted"}
+                          </span>
+                          {status === "pending" && (
+                            <div className="flex gap-2">
+                              <Form method="post" className="inline">
+                                <input type="hidden" name="requestId" value={request.id} />
+                                <input type="hidden" name="action" value="complete" />
+                                <button
+                                  type="submit"
+                                  disabled={navigation.state === "submitting"}
+                                  className="text-sm px-3 py-1 text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50"
+                                >
+                                  Mark Complete
+                                </button>
+                              </Form>
+                              <Form method="post" className="inline">
+                                <input type="hidden" name="requestId" value={request.id} />
+                                <input type="hidden" name="action" value="delete" />
+                                <button
+                                  type="submit"
+                                  disabled={navigation.state === "submitting"}
+                                  className="text-sm px-3 py-1 text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-50"
+                                  onClick={(e) => {
+                                    if (!confirm("Are you sure you want to delete this request?")) {
+                                      e.preventDefault();
+                                    }
+                                  }}
+                                >
+                                  Delete
+                                </button>
+                                </Form>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <div className="text-center text-gray-500 dark:text-gray-400 py-8">
                   No requests found.

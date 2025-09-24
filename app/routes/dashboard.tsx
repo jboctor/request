@@ -1,10 +1,10 @@
 import type { Route } from "./+types/dashboard";
-import { Form, useNavigation, useSearchParams } from "react-router";
+import { Form, useNavigation } from "react-router";
 import { useState, useEffect } from "react";
 import { database } from "~/database/context";
 import { request as requestTable, requestMediaTypeEnum } from "~/database/schema";
 import { redirect } from "react-router";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, isNull, and } from "drizzle-orm";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -15,6 +15,68 @@ export function meta({}: Route.MetaArgs) {
 
 export async function action({ request, context }: Route.ActionArgs) {
   const formData = await request.formData();
+  const action = formData.get("action");
+
+  const user = context.session?.user;
+  if (!user?.id) {
+    return redirect("/");
+  }
+
+  if (action === "delete") {
+    const requestId = formData.get("requestId");
+
+    if (!requestId) {
+      return { error: "Request ID is required" };
+    }
+
+    try {
+      const db = database();
+      const id = parseInt(requestId as string, 10);
+
+      if (isNaN(id)) {
+        return { error: "Invalid request ID" };
+      }
+
+      // Check if request exists, belongs to user, and is not completed
+      const [existingRequest] = await db
+        .select({
+          id: requestTable.id,
+          title: requestTable.title,
+          dateCompleted: requestTable.dateCompleted
+        })
+        .from(requestTable)
+        .where(and(eq(requestTable.id, id), eq(requestTable.userId, user.id)))
+        .limit(1);
+
+      if (!existingRequest) {
+        return { error: "Request not found or you don't have permission to delete it" };
+      }
+
+      if (existingRequest.dateCompleted) {
+        return { error: "Cannot delete completed requests" };
+      }
+
+      // Soft delete the request
+      const [deletedRequest] = await db
+        .update(requestTable)
+        .set({ dateDeleted: new Date() })
+        .where(and(eq(requestTable.id, id), eq(requestTable.userId, user.id)))
+        .returning({
+          id: requestTable.id,
+          title: requestTable.title
+        });
+
+      if (!deletedRequest) {
+        return { error: "Request not found or you don't have permission to delete it" };
+      }
+
+      return { success: `Request "${deletedRequest.title}" deleted successfully` };
+    } catch (error) {
+      console.error("Error deleting request:", error);
+      return { error: "Failed to delete request" };
+    }
+  }
+
   const title = formData.get("title");
   const mediaType = formData.get("mediaType");
 
@@ -31,18 +93,12 @@ export async function action({ request, context }: Route.ActionArgs) {
     return { error: "Invalid media type selected" };
   }
 
-  const user = context.session?.user;
-  if (!user?.id) {
-    return redirect("/");
-  }
-
   try {
     const db = database();
     await db.insert(requestTable).values({
       userId: user.id,
       title: title.trim(),
-      mediaType: mediaType.trim() as typeof requestMediaTypeEnum.enumValues[number],
-      status: "pending"
+      mediaType: mediaType.trim() as typeof requestMediaTypeEnum.enumValues[number]
     });
 
     return { success: "Request submitted successfully!" };
@@ -63,7 +119,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
     const requests = await db
       .select()
       .from(requestTable)
-      .where(eq(requestTable.userId, user.id))
+      .where(and(eq(requestTable.userId, user.id), isNull(requestTable.dateDeleted)))
       .orderBy(desc(requestTable.dateCreated));
 
     return { requests };
@@ -74,20 +130,25 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 }
 
 export default function Dashboard({ actionData, loaderData }: Route.ComponentProps) {
-  const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<"request" | "view">("request");
   const navigation = useNavigation();
 
   useEffect(() => {
-    const tabParam = searchParams.get("tab");
-    if (tabParam === "view" || tabParam === "request") {
-      setActiveTab(tabParam);
+    const savedTab = localStorage.getItem("dashboard-active-tab");
+    if (savedTab === "view" || savedTab === "request") {
+      setActiveTab(savedTab);
     }
-  }, [searchParams]);
+  }, []);
+
+  useEffect(() => {
+    if (actionData?.success) {
+      handleTabChange("view");
+    }
+  }, [actionData?.success]);
 
   const handleTabChange = (tab: "request" | "view") => {
     setActiveTab(tab);
-    setSearchParams({ tab });
+    localStorage.setItem("dashboard-active-tab", tab);
   };
 
   return (
@@ -144,9 +205,11 @@ export default function Dashboard({ actionData, loaderData }: Route.ComponentPro
                       className="w-full dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:focus:ring-blue-500 h-10 px-3 rounded-lg border border-gray-200 focus:ring-1 focus:ring-blue-500"
                     >
                       <option value="">Select Media Type</option>
-                      <option value="book">Book</option>
-                      <option value="movie">Movie</option>
-                      <option value="tv-show">TV Show</option>
+                      {requestMediaTypeEnum.enumValues.map((mediaType) => (
+                        <option key={mediaType} value={mediaType}>
+                          {mediaType}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div>
@@ -174,33 +237,58 @@ export default function Dashboard({ actionData, loaderData }: Route.ComponentPro
                 <h2 className="text-center text-lg font-medium mb-4">Your Requests</h2>
                 <div className="space-y-3">
                   {loaderData?.requests && loaderData.requests.length > 0 ? (
-                    loaderData.requests.map((request) => (
-                      <div key={request.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <h3 className="font-medium">{request.title}</h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-400 capitalize">
-                              {request.mediaType.replace('-', ' ')}
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                              Requested on {new Date(request.dateCreated).toLocaleString()}
-                            </p>
-                            {request.status === "completed" && request.dateCompleted && (
-                              <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                                Completed on {new Date(request.dateCompleted).toLocaleString()}
+                    loaderData.requests.map((request) => {
+                      const isCompleted = request.dateCompleted !== null;
+                      const status = isCompleted ? "completed" : "pending";
+
+                      return (
+                        <div key={request.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <h3 className="font-medium">{request.title}</h3>
+                              <p className="text-sm text-gray-600 dark:text-gray-400 capitalize">
+                                {request.mediaType}
                               </p>
-                            )}
+                              <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                                Requested on {new Date(request.dateCreated).toLocaleString()}
+                              </p>
+                              {isCompleted && request.dateCompleted && (
+                                <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                                  Completed on {new Date(request.dateCompleted).toLocaleString()}
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className={`text-xs px-2 py-1 rounded-full ${
+                                status === "pending"
+                                  ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                                  : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                              }`}>
+                                {status === "pending" ? "Pending" : "Completed"}
+                              </span>
+                              {status === "pending" && (
+                                <Form method="post" className="inline">
+                                  <input type="hidden" name="requestId" value={request.id} />
+                                  <input type="hidden" name="action" value="delete" />
+                                  <button
+                                    type="submit"
+                                    disabled={navigation.state === "submitting"}
+                                    className="text-sm px-3 py-1 text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-50"
+                                    onClick={(e) => {
+                                      if (!confirm("Are you sure you want to delete this request?")) {
+                                        e.preventDefault();
+                                      }
+                                    }}
+                                  >
+                                    Delete
+                                  </button>
+                                </Form>
+                              )}
+                            </div>
                           </div>
-                          <span className={`text-xs px-2 py-1 rounded-full ${
-                            request.status === "pending"
-                              ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-                              : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                          }`}>
-                            {request.status === "pending" ? "Pending" : "Completed"}
-                          </span>
                         </div>
-                      </div>
-                    ))
+                      );
+                    })
                   ) : (
                     <div className="text-center text-gray-500 dark:text-gray-400 py-8">
                       No requests found. Submit your first request!
