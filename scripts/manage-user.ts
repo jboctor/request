@@ -6,7 +6,7 @@ import { PasswordManager } from "~/auth/password.js";
 import { randomBytes } from "crypto";
 import { eq } from "drizzle-orm";
 
-async function createUser(email: string, password: string, isAdmin: boolean = false) {
+async function createUser(username: string, password: string, isAdmin: boolean = false) {
   if (!process.env.DATABASE_URL) {
     throw new Error("DATABASE_URL environment variable is required");
   }
@@ -18,15 +18,15 @@ async function createUser(email: string, password: string, isAdmin: boolean = fa
   try {
     // Check if user already exists
     const existingUser = await db.query.user.findFirst({
-      where: eq(schema.user.email, email),
+      where: eq(schema.user.username, username),
       columns: {
         id: true,
-        email: true
+        username: true
       }
     });
 
     if (existingUser) {
-      console.error(`❌ User with email "${email}" already exists`);
+      console.error(`❌ User with username "${username}" already exists`);
       process.exit(1);
     }
 
@@ -36,19 +36,19 @@ async function createUser(email: string, password: string, isAdmin: boolean = fa
 
     // Insert user
     const [newUser] = await db.insert(schema.user).values({
-      email,
+      username,
       salt,
       password: hashedPassword,
       isAdmin,
     }).returning({
       id: schema.user.id,
-      email: schema.user.email,
+      username: schema.user.username,
       isAdmin: schema.user.isAdmin
     });
 
     console.log(`✅ User created successfully:`);
     console.log(`   ID: ${newUser.id}`);
-    console.log(`   Email: ${newUser.email}`);
+    console.log(`   Username: ${newUser.username}`);
     console.log(`   Admin: ${newUser.isAdmin ? 'Yes' : 'No'}`);
 
   } catch (error) {
@@ -59,7 +59,7 @@ async function createUser(email: string, password: string, isAdmin: boolean = fa
   }
 }
 
-async function updatePassword(email: string, newPassword: string) {
+async function updatePassword(username: string, newPassword: string) {
   if (!process.env.DATABASE_URL) {
     throw new Error("DATABASE_URL environment variable is required");
   }
@@ -71,15 +71,15 @@ async function updatePassword(email: string, newPassword: string) {
   try {
     // Find user
     const existingUser = await db.query.user.findFirst({
-      where: eq(schema.user.email, email),
+      where: eq(schema.user.username, username),
       columns: {
         id: true,
-        email: true
+        username: true
       }
     });
 
     if (!existingUser) {
-      console.error(`❌ User with email "${email}" not found`);
+      console.error(`❌ User with username "${username}" not found`);
       process.exit(1);
     }
 
@@ -93,9 +93,9 @@ async function updatePassword(email: string, newPassword: string) {
         salt,
         password: hashedPassword
       })
-      .where(eq(schema.user.email, email));
+      .where(eq(schema.user.username, username));
 
-    console.log(`✅ Password updated successfully for: ${email}`);
+    console.log(`✅ Password updated successfully for: ${username}`);
 
   } catch (error) {
     console.error("❌ Failed to update password:", error);
@@ -105,7 +105,7 @@ async function updatePassword(email: string, newPassword: string) {
   }
 }
 
-async function toggleAdmin(email: string) {
+async function toggleAdmin(username: string) {
   if (!process.env.DATABASE_URL) {
     throw new Error("DATABASE_URL environment variable is required");
   }
@@ -116,16 +116,16 @@ async function toggleAdmin(email: string) {
   try {
     // Find user
     const existingUser = await db.query.user.findFirst({
-      where: eq(schema.user.email, email),
+      where: eq(schema.user.username, username),
       columns: {
         id: true,
-        email: true,
+        username: true,
         isAdmin: true
       }
     });
 
     if (!existingUser) {
-      console.error(`❌ User with email "${email}" not found`);
+      console.error(`❌ User with username "${username}" not found`);
       process.exit(1);
     }
 
@@ -133,9 +133,9 @@ async function toggleAdmin(email: string) {
     const newAdminStatus = !existingUser.isAdmin;
     await db.update(schema.user)
       .set({ isAdmin: newAdminStatus })
-      .where(eq(schema.user.email, email));
+      .where(eq(schema.user.username, username));
 
-    console.log(`✅ Admin status updated for: ${email}`);
+    console.log(`✅ Admin status updated for: ${username}`);
     console.log(`   Admin: ${newAdminStatus ? 'Yes' : 'No'}`);
 
   } catch (error) {
@@ -158,7 +158,7 @@ async function listUsers() {
     const users = await db.query.user.findMany({
       columns: {
         id: true,
-        email: true,
+        username: true,
         isAdmin: true
       },
       orderBy: schema.user.id
@@ -172,7 +172,7 @@ async function listUsers() {
     console.log("\n📋 All Users:");
     console.log("═".repeat(60));
     users.forEach(user => {
-      console.log(`ID: ${user.id} | Email: ${user.email} | Admin: ${user.isAdmin ? 'Yes' : 'No'}`);
+      console.log(`ID: ${user.id} | Username: ${user.username} | Admin: ${user.isAdmin ? 'Yes' : 'No'}`);
     });
     console.log("═".repeat(60));
 
@@ -187,16 +187,16 @@ async function listUsers() {
 function showUsage() {
   console.log("User Management Script");
   console.log("Usage:");
-  console.log("  npm run manage-user create <email> <password> [--admin]");
-  console.log("  npm run manage-user password <email> <new-password>");
-  console.log("  npm run manage-user toggle-admin <email>");
+  console.log("  npm run manage-user create <username> <password> [--admin]");
+  console.log("  npm run manage-user password <username> <new-password>");
+  console.log("  npm run manage-user toggle-admin <username>");
   console.log("  npm run manage-user list");
   console.log("");
   console.log("Examples:");
-  console.log("  npm run manage-user create user@example.com mypassword123");
-  console.log("  npm run manage-user create admin@example.com adminpass --admin");
-  console.log("  npm run manage-user password user@example.com newpassword456");
-  console.log("  npm run manage-user toggle-admin user@example.com");
+  console.log("  npm run manage-user create john mypassword123");
+  console.log("  npm run manage-user create admin adminpass --admin");
+  console.log("  npm run manage-user password john newpassword456");
+  console.log("  npm run manage-user toggle-admin john");
   console.log("  npm run manage-user list");
 }
 
@@ -213,15 +213,15 @@ const command = args[0];
 switch (command) {
   case "create":
     if (args.length < 3) {
-      console.error("❌ Create command requires email and password");
+      console.error("❌ Create command requires username and password");
       showUsage();
       process.exit(1);
     }
-    const [, email, password] = args;
+    const [, username, password] = args;
     const isAdmin = args.includes("--admin");
 
-    if (!email.includes("@")) {
-      console.error("❌ Please provide a valid email address");
+    if (username.length < 3) {
+      console.error("❌ Username must be at least 3 characters long");
       process.exit(1);
     }
 
@@ -230,19 +230,19 @@ switch (command) {
       process.exit(1);
     }
 
-    createUser(email, password, isAdmin);
+    createUser(username, password, isAdmin);
     break;
 
   case "password":
     if (args.length < 3) {
-      console.error("❌ Password command requires email and new password");
+      console.error("❌ Password command requires username and new password");
       showUsage();
       process.exit(1);
     }
-    const [, updateEmail, newPassword] = args;
+    const [, updateUsername, newPassword] = args;
 
-    if (!updateEmail.includes("@")) {
-      console.error("❌ Please provide a valid email address");
+    if (updateUsername.length < 3) {
+      console.error("❌ Username must be at least 3 characters long");
       process.exit(1);
     }
 
@@ -251,23 +251,23 @@ switch (command) {
       process.exit(1);
     }
 
-    updatePassword(updateEmail, newPassword);
+    updatePassword(updateUsername, newPassword);
     break;
 
   case "toggle-admin":
     if (args.length < 2) {
-      console.error("❌ Toggle-admin command requires email");
+      console.error("❌ Toggle-admin command requires username");
       showUsage();
       process.exit(1);
     }
-    const [, toggleEmail] = args;
+    const [, toggleUsername] = args;
 
-    if (!toggleEmail.includes("@")) {
-      console.error("❌ Please provide a valid email address");
+    if (toggleUsername.length < 3) {
+      console.error("❌ Username must be at least 3 characters long");
       process.exit(1);
     }
 
-    toggleAdmin(toggleEmail);
+    toggleAdmin(toggleUsername);
     break;
 
   case "list":

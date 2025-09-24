@@ -4,8 +4,8 @@ import { Button } from "~/components/Button";
 
 function checkAuth(args?: Route.LoaderArgs) {
   const user = args?.context?.session?.user;
-  if (user?.id && user?.email) {
-    return { id: user.id, email: user.email, isAdmin: user.isAdmin ?? false };
+  if (user?.id && user?.username) {
+    return { id: user.id, username: user.username, isAdmin: user.isAdmin ?? false };
   }
   return null;
 }
@@ -31,7 +31,7 @@ export default function AuthLayout({
       <header className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-6">
           <span className="text-gray-900 dark:text-gray-100">
-            Logged in: {user.email}
+            Logged in: {user.username}
           </span>
           {user.isAdmin && (
             <nav className="flex gap-4">

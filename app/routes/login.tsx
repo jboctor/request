@@ -18,15 +18,15 @@ export function meta({}: Route.MetaArgs) {
 
 export async function action({ request, context }: Route.ActionArgs) {
   const formData = await request.formData();
-  let email = formData.get("email");
+  let username = formData.get("username");
   let password = formData.get("password");
-  if (typeof email !== "string" || typeof password !== "string") {
-    return { error: "Email and password are required" };
+  if (typeof username !== "string" || typeof password !== "string") {
+    return { error: "Username and password are required" };
   }
 
-  email = email.trim();
-  if (!email) {
-    return { error: "Email is required" };
+  username = username.trim();
+  if (!username) {
+    return { error: "Username is required" };
   }
 
   password = password.trim();
@@ -38,10 +38,10 @@ export async function action({ request, context }: Route.ActionArgs) {
   let user = null;
   try {
     user = await db.query.user.findFirst({
-      where: (fields, operators) => operators.eq(fields.email, email),
+      where: (fields, operators) => operators.eq(fields.username, username),
       columns: {
         id: true,
-        email: true,
+        username: true,
         salt: true,
         password: true,
         isAdmin: true
@@ -91,8 +91,8 @@ export default function Home({ actionData, loaderData }: Route.ComponentProps) {
               }}
             >
               <input
-                name="email"
-                placeholder="Email"
+                name="username"
+                placeholder="Username"
                 required
                 className="w-full dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:focus:ring-blue-500 h-10 px-3 rounded-lg border border-gray-200 focus:ring-1 focus:ring-blue-500"
               />

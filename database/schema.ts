@@ -2,7 +2,7 @@ import { integer, pgTable, varchar, pgEnum, boolean, timestamp } from "drizzle-o
 
 export const user = pgTable("user", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  email: varchar({ length: 255 }).notNull().unique(),
+  username: varchar({ length: 255 }).notNull().unique(),
   salt: varchar({ length: 255 }).notNull(),
   password: varchar({ length: 255 }).notNull(),
   isAdmin: boolean().notNull().default(false),

@@ -137,6 +137,9 @@ export default function Dashboard({ actionData, loaderData }: Route.ComponentPro
             {activeTab === "request" ? (
               <div>
                 <h2 className="text-center text-lg font-medium mb-4">Make a Request</h2>
+                <div className="text-sm text-gray-600 dark:text-gray-400 text-center mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                  💡 <strong>Tip:</strong> Please provide as much detail as possible in your request title, including author, release date, edition, or any other identifying information to help us find exactly what you're looking for.
+                </div>
                 {actionData?.error && (
                   <div className="text-red-600 text-center mb-4">{actionData.error}</div>
                 )}

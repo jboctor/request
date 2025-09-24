@@ -17,7 +17,7 @@ export class AuthManager {
     if (!valid) {
         throw new Error("Invalid password");
     }
-    session.user = { id: user.id, email: user.email, isAdmin: user.isAdmin ?? false };
+    session.user = { id: user.id, username: user.username, isAdmin: user.isAdmin ?? false };
     session.save((err: any) => {
       if (err) throw err;
     });
