@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { requestMediaTypeEnum } from "~/database/schema";
 import { redirect } from "react-router";
 import { RequestService } from "~/services/requestService";
+import { RequestActionService } from "~/services/requestActionService";
 import { Button } from "~/components/Button";
 import { Requests } from "~/components/Requests";
 
@@ -24,28 +25,7 @@ export async function action({ request, context }: Route.ActionArgs) {
   }
 
   if (action === "delete") {
-    const requestId = formData.get("requestId");
-
-    if (!requestId) {
-      return { error: "Request ID is required" };
-    }
-
-    try {
-      const id = parseInt(requestId as string, 10);
-
-      if (isNaN(id)) {
-        return { error: "Invalid request ID" };
-      }
-
-      const deletedRequest = await RequestService.deleteRequest(id, user.id);
-      return { success: `Request "${deletedRequest.title}" deleted successfully` };
-    } catch (error) {
-      console.error("Error deleting request:", error);
-      if (error instanceof Error) {
-        return { error: error.message };
-      }
-      return { error: "Failed to delete request" };
-    }
+    return await RequestActionService.handleFormAction(formData, user.id, false);
   }
 
   const title = formData.get("title");

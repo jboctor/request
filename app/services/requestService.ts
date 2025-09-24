@@ -43,7 +43,6 @@ export class RequestService {
       .orderBy(desc(requestTable.dateCreated));
   }
 
-  // Create a new request
   static async createRequest(data: CreateRequestData) {
     await this.db.insert(requestTable).values({
       userId: data.userId,
@@ -54,6 +53,29 @@ export class RequestService {
 
   // Mark request as completed (admin only)
   static async completeRequest(id: number) {
+    const [existingRequest] = await this.db
+      .select({
+        id: requestTable.id,
+        title: requestTable.title,
+        dateCompleted: requestTable.dateCompleted,
+        dateDeleted: requestTable.dateDeleted
+      })
+      .from(requestTable)
+      .where(eq(requestTable.id, id))
+      .limit(1);
+
+    if (!existingRequest) {
+      throw new Error("Request not found");
+    }
+
+    if (existingRequest.dateCompleted) {
+      throw new Error("Request is already completed");
+    }
+
+    if (existingRequest.dateDeleted) {
+      throw new Error("Cannot complete deleted requests");
+    }
+
     const [updatedRequest] = await this.db
       .update(requestTable)
       .set({ dateCompleted: new Date() })
@@ -68,7 +90,6 @@ export class RequestService {
 
   // Soft delete a request (admin - any request, user - own request only)
   static async deleteRequest(id: number, userId?: number) {
-    // Check if request exists and get its details
     const whereCondition = userId
       ? and(eq(requestTable.id, id), eq(requestTable.userId, userId))
       : eq(requestTable.id, id);
@@ -91,7 +112,6 @@ export class RequestService {
       throw new Error("Cannot delete completed requests");
     }
 
-    // Soft delete the request
     const [deletedRequest] = await this.db
       .update(requestTable)
       .set({ dateDeleted: new Date() })
@@ -104,7 +124,6 @@ export class RequestService {
     return deletedRequest;
   }
 
-  // Get a single request by ID
   static async getRequestById(id: number) {
     const [request] = await this.db
       .select()
@@ -115,7 +134,6 @@ export class RequestService {
     return request;
   }
 
-  // Validate media type
   static isValidMediaType(mediaType: string): mediaType is typeof requestMediaTypeEnum.enumValues[number] {
     return requestMediaTypeEnum.enumValues.includes(mediaType as any);
   }

@@ -1,6 +1,7 @@
 import type { Route } from "./+types/admin";
 import { useState } from "react";
 import { RequestService } from "~/services/requestService";
+import { RequestActionService } from "~/services/requestActionService";
 import { Button } from "~/components/Button";
 import { Requests } from "~/components/Requests";
 
@@ -11,47 +12,9 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export async function action({ request, context }: Route.ActionArgs) {
+export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
-  const requestId = formData.get("requestId");
-  const action = formData.get("action");
-
-  if (!requestId || !action) {
-    return { error: "Missing request ID or action" };
-  }
-
-  if (action !== "complete" && action !== "delete") {
-    return { error: "Invalid action" };
-  }
-
-  try {
-    const id = parseInt(requestId as string, 10);
-
-    if (isNaN(id)) {
-      return { error: "Invalid request ID" };
-    }
-
-    if (action === "complete") {
-      const updatedRequest = await RequestService.completeRequest(id);
-
-      if (!updatedRequest) {
-        return { error: "Request not found" };
-      }
-
-      return { success: `Request "${updatedRequest.title}" marked as completed` };
-    } else if (action === "delete") {
-      const deletedRequest = await RequestService.deleteRequest(id);
-      return { success: `Request "${deletedRequest.title}" deleted successfully` };
-    }
-
-    return { error: "Invalid action" };
-  } catch (error) {
-    console.error("Error updating request:", error);
-    if (error instanceof Error) {
-      return { error: error.message };
-    }
-    return { error: "Failed to update request" };
-  }
+  return await RequestActionService.handleFormAction(formData, undefined, true);
 }
 
 export async function loader({}: Route.LoaderArgs) {
