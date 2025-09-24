@@ -8,7 +8,9 @@
     "database/**/*",
     "auth/**/*",
     "server/**/*",
-    "types/**/*"
+    "types/**/*",
+    "components/**/*",
+    "scripts/**/*"
   ],
   "compilerOptions": {
     "composite": true,
@@ -22,6 +24,7 @@
     "baseUrl": ".",
     "rootDirs": [".", "./.react-router/types"],
     "paths": {
+      "~/components/*": ["./components/*"],
       "~/database/*": ["./database/*"],
       "~/auth/*": ["./auth/*"],
       "~/*": ["./app/*"]

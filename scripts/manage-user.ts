@@ -1,8 +1,8 @@
 #!/usr/bin/env tsx
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import * as schema from "../database/schema.js";
-import { PasswordManager } from "../auth/password.js";
+import * as schema from "~/database/schema.js";
+import { PasswordManager } from "~/auth/password.js";
 import { randomBytes } from "crypto";
 import { eq } from "drizzle-orm";
 

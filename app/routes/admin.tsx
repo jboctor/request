@@ -1,9 +1,8 @@
 import type { Route } from "./+types/admin";
 import { Form, useNavigation } from "react-router";
-import { useState, useEffect } from "react";
-import { database } from "~/database/context";
-import { request as requestTable } from "~/database/schema";
-import { eq, asc, desc } from "drizzle-orm";
+import { useState } from "react";
+import { RequestService } from "~/services/requestService";
+import { Button } from "~/components/Button";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -26,7 +25,6 @@ export async function action({ request, context }: Route.ActionArgs) {
   }
 
   try {
-    const db = database();
     const id = parseInt(requestId as string, 10);
 
     if (isNaN(id)) {
@@ -34,14 +32,7 @@ export async function action({ request, context }: Route.ActionArgs) {
     }
 
     if (action === "complete") {
-      const [updatedRequest] = await db
-        .update(requestTable)
-        .set({ dateCompleted: new Date() })
-        .where(eq(requestTable.id, id))
-        .returning({
-          id: requestTable.id,
-          title: requestTable.title
-        });
+      const updatedRequest = await RequestService.completeRequest(id);
 
       if (!updatedRequest) {
         return { error: "Request not found" };
@@ -49,68 +40,23 @@ export async function action({ request, context }: Route.ActionArgs) {
 
       return { success: `Request "${updatedRequest.title}" marked as completed` };
     } else if (action === "delete") {
-      // Check if request is already completed
-      const [existingRequest] = await db
-        .select({
-          id: requestTable.id,
-          title: requestTable.title,
-          dateCompleted: requestTable.dateCompleted
-        })
-        .from(requestTable)
-        .where(eq(requestTable.id, id))
-        .limit(1);
-
-      if (!existingRequest) {
-        return { error: "Request not found" };
-      }
-
-      if (existingRequest.dateCompleted) {
-        return { error: "Cannot delete completed requests" };
-      }
-
-      const [deletedRequest] = await db
-        .update(requestTable)
-        .set({ dateDeleted: new Date() })
-        .where(eq(requestTable.id, id))
-        .returning({
-          id: requestTable.id,
-          title: requestTable.title
-        });
-
-      if (!deletedRequest) {
-        return { error: "Request not found" };
-      }
-
+      const deletedRequest = await RequestService.deleteRequest(id);
       return { success: `Request "${deletedRequest.title}" deleted successfully` };
     }
 
     return { error: "Invalid action" };
   } catch (error) {
     console.error("Error updating request:", error);
-    return { error: "Failed to update request status" };
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
+    return { error: "Failed to update request" };
   }
 }
 
 export async function loader({}: Route.LoaderArgs) {
   try {
-    const db = database();
-
-    const requests = await db
-      .select({
-        id: requestTable.id,
-        title: requestTable.title,
-        mediaType: requestTable.mediaType,
-        userId: requestTable.userId,
-        dateCreated: requestTable.dateCreated,
-        dateCompleted: requestTable.dateCompleted,
-        dateDeleted: requestTable.dateDeleted
-      })
-      .from(requestTable)
-      .orderBy(
-        desc(requestTable.dateCompleted),
-        asc(requestTable.dateCreated)
-      );
-
+    const requests = await RequestService.getAllRequests();
     return { requests };
   } catch (error) {
     console.error("Error fetching requests:", error);
@@ -138,26 +84,18 @@ export default function Admin({ actionData, loaderData }: Route.ComponentProps) 
 
             {/* Filter Controls */}
             <div className="flex justify-center gap-4 mb-4">
-              <button
+              <Button
+                variant={showCompleted ? "success" : "info"}
                 onClick={() => setShowCompleted(!showCompleted)}
-                className={`px-3 py-1 text-sm rounded border ${
-                  showCompleted
-                    ? "bg-green-100 border-green-300 text-green-800 dark:bg-green-900 dark:border-green-700 dark:text-green-200"
-                    : "bg-gray-100 border-gray-300 text-gray-700 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300"
-                } hover:opacity-80`}
               >
                 {showCompleted ? "Hide" : "Show"} Completed
-              </button>
-              <button
+              </Button>
+              <Button
+                variant={showDeleted ? "alert" : "info"}
                 onClick={() => setShowDeleted(!showDeleted)}
-                className={`px-3 py-1 text-sm rounded border ${
-                  showDeleted
-                    ? "bg-red-100 border-red-300 text-red-800 dark:bg-red-900 dark:border-red-700 dark:text-red-200"
-                    : "bg-gray-100 border-gray-300 text-gray-700 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300"
-                } hover:opacity-80`}
               >
                 {showDeleted ? "Hide" : "Show"} Deleted
-              </button>
+              </Button>
             </div>
 
             {actionData?.error && (
@@ -221,29 +159,29 @@ export default function Admin({ actionData, loaderData }: Route.ComponentProps) 
                               <Form method="post" className="inline">
                                 <input type="hidden" name="requestId" value={request.id} />
                                 <input type="hidden" name="action" value="complete" />
-                                <button
+                                <Button
                                   type="submit"
+                                  variant="success"
                                   disabled={navigation.state === "submitting"}
-                                  className="text-sm px-3 py-1 text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50"
                                 >
                                   Mark Complete
-                                </button>
+                                </Button>
                               </Form>
                               <Form method="post" className="inline">
                                 <input type="hidden" name="requestId" value={request.id} />
                                 <input type="hidden" name="action" value="delete" />
-                                <button
+                                <Button
                                   type="submit"
+                                  variant="alert"
                                   disabled={navigation.state === "submitting"}
-                                  className="text-sm px-3 py-1 text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-50"
-                                  onClick={(e) => {
+                                  onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                                     if (!confirm("Are you sure you want to delete this request?")) {
                                       e.preventDefault();
                                     }
                                   }}
                                 >
                                   Delete
-                                </button>
+                                </Button>
                                 </Form>
                             </div>
                           )}

@@ -1,10 +1,10 @@
 import type { Route } from "./+types/dashboard";
 import { Form, useNavigation } from "react-router";
 import { useState, useEffect } from "react";
-import { database } from "~/database/context";
-import { request as requestTable, requestMediaTypeEnum } from "~/database/schema";
+import { requestMediaTypeEnum } from "~/database/schema";
 import { redirect } from "react-router";
-import { eq, desc, isNull, and } from "drizzle-orm";
+import { RequestService } from "~/services/requestService";
+import { Button } from "~/components/Button";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -30,49 +30,19 @@ export async function action({ request, context }: Route.ActionArgs) {
     }
 
     try {
-      const db = database();
       const id = parseInt(requestId as string, 10);
 
       if (isNaN(id)) {
         return { error: "Invalid request ID" };
       }
 
-      // Check if request exists, belongs to user, and is not completed
-      const [existingRequest] = await db
-        .select({
-          id: requestTable.id,
-          title: requestTable.title,
-          dateCompleted: requestTable.dateCompleted
-        })
-        .from(requestTable)
-        .where(and(eq(requestTable.id, id), eq(requestTable.userId, user.id)))
-        .limit(1);
-
-      if (!existingRequest) {
-        return { error: "Request not found or you don't have permission to delete it" };
-      }
-
-      if (existingRequest.dateCompleted) {
-        return { error: "Cannot delete completed requests" };
-      }
-
-      // Soft delete the request
-      const [deletedRequest] = await db
-        .update(requestTable)
-        .set({ dateDeleted: new Date() })
-        .where(and(eq(requestTable.id, id), eq(requestTable.userId, user.id)))
-        .returning({
-          id: requestTable.id,
-          title: requestTable.title
-        });
-
-      if (!deletedRequest) {
-        return { error: "Request not found or you don't have permission to delete it" };
-      }
-
+      const deletedRequest = await RequestService.deleteRequest(id, user.id);
       return { success: `Request "${deletedRequest.title}" deleted successfully` };
     } catch (error) {
       console.error("Error deleting request:", error);
+      if (error instanceof Error) {
+        return { error: error.message };
+      }
       return { error: "Failed to delete request" };
     }
   }
@@ -88,17 +58,16 @@ export async function action({ request, context }: Route.ActionArgs) {
     return { error: "Title and media type cannot be empty" };
   }
 
-  const validMediaTypes = requestMediaTypeEnum.enumValues;
-  if (!validMediaTypes.includes(mediaType as any)) {
+  const trimmedMediaType = mediaType.trim();
+  if (!RequestService.isValidMediaType(trimmedMediaType)) {
     return { error: "Invalid media type selected" };
   }
 
   try {
-    const db = database();
-    await db.insert(requestTable).values({
+    await RequestService.createRequest({
       userId: user.id,
       title: title.trim(),
-      mediaType: mediaType.trim() as typeof requestMediaTypeEnum.enumValues[number]
+      mediaType: trimmedMediaType
     });
 
     return { success: "Request submitted successfully!" };
@@ -115,13 +84,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   }
 
   try {
-    const db = database();
-    const requests = await db
-      .select()
-      .from(requestTable)
-      .where(and(eq(requestTable.userId, user.id), isNull(requestTable.dateDeleted)))
-      .orderBy(desc(requestTable.dateCreated));
-
+    const requests = await RequestService.getUserRequests(user.id);
     return { requests };
   } catch (error) {
     console.error("Error fetching requests:", error);
@@ -270,18 +233,18 @@ export default function Dashboard({ actionData, loaderData }: Route.ComponentPro
                                 <Form method="post" className="inline">
                                   <input type="hidden" name="requestId" value={request.id} />
                                   <input type="hidden" name="action" value="delete" />
-                                  <button
+                                  <Button
                                     type="submit"
+                                    variant="alert"
                                     disabled={navigation.state === "submitting"}
-                                    className="text-sm px-3 py-1 text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-50"
-                                    onClick={(e) => {
+                                    onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                                       if (!confirm("Are you sure you want to delete this request?")) {
                                         e.preventDefault();
                                       }
                                     }}
                                   >
                                     Delete
-                                  </button>
+                                  </Button>
                                 </Form>
                               )}
                             </div>
