@@ -7,7 +7,7 @@ import type { Route } from "./+types/login";
 import { Form, useNavigation } from "react-router";
 import { redirect } from "react-router";
 
-const authManager = new AuthManager(new PasswordManager());
+const authManager = new AuthManager(new PasswordManager(process.env.PASSWORD_PEPPER));
 
 export function meta({}: Route.MetaArgs) {
   return [

@@ -13,7 +13,7 @@ async function createUser(username: string, password: string, isAdmin: boolean =
 
   const client = postgres(process.env.DATABASE_URL);
   const db = drizzle(client, { schema });
-  const passwordManager = new PasswordManager();
+  const passwordManager = new PasswordManager(process.env.PASSWORD_PEPPER);
 
   try {
     // Check if user already exists
@@ -66,7 +66,7 @@ async function updatePassword(username: string, newPassword: string) {
 
   const client = postgres(process.env.DATABASE_URL);
   const db = drizzle(client, { schema });
-  const passwordManager = new PasswordManager();
+  const passwordManager = new PasswordManager(process.env.PASSWORD_PEPPER);
 
   try {
     // Find user
