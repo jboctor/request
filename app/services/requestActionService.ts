@@ -13,6 +13,7 @@ export class RequestActionService {
   ): Promise<FormActionResult> {
     const requestId = formData.get("requestId");
     const action = formData.get("action");
+    const notes = formData.get("notes") as string | null;
 
     if (!requestId || !action) {
       return { error: "Missing request ID or action" };
@@ -33,12 +34,12 @@ export class RequestActionService {
       }
 
       if (action === "complete") {
-        const updatedRequest = await RequestService.completeRequest(id);
+        const updatedRequest = await RequestService.completeRequest(id, notes || undefined);
         return { success: `Request "${updatedRequest.title}" marked as completed` };
-      } 
-      
+      }
+
       if (action === "delete") {
-        const deletedRequest = await RequestService.deleteRequest(id, userId);
+        const deletedRequest = await RequestService.deleteRequest(id, userId, notes || undefined);
         return { success: `Request "${deletedRequest.title}" deleted successfully` };
       }
 

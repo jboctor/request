@@ -18,7 +18,7 @@ export class RequestService {
 
   // Get all requests (for admin)
   static async getAllRequests() {
-    return await this.db
+    const requests = await this.db
       .select({
         id: requestTable.id,
         title: requestTable.title,
@@ -26,21 +26,36 @@ export class RequestService {
         userId: requestTable.userId,
         dateCreated: requestTable.dateCreated,
         dateCompleted: requestTable.dateCompleted,
-        dateDeleted: requestTable.dateDeleted
+        dateDeleted: requestTable.dateDeleted,
+        notes: requestTable.notes
       })
       .from(requestTable)
       .orderBy(
         asc(requestTable.dateCreated)
       );
+
+    return requests.map(request => ({
+      ...request,
+      dateCreatedFormatted: request.dateCreated.toLocaleString('en-US'),
+      dateCompletedFormatted: request.dateCompleted?.toLocaleString('en-US') || null,
+      dateDeletedFormatted: request.dateDeleted?.toLocaleString('en-US') || null,
+    }));
   }
 
   // Get requests for a specific user (for dashboard)
   static async getUserRequests(userId: number) {
-    return await this.db
+    const requests = await this.db
       .select()
       .from(requestTable)
       .where(eq(requestTable.userId, userId))
       .orderBy(desc(requestTable.dateCreated));
+
+    return requests.map(request => ({
+      ...request,
+      dateCreatedFormatted: request.dateCreated.toLocaleString('en-US'),
+      dateCompletedFormatted: request.dateCompleted?.toLocaleString('en-US') || null,
+      dateDeletedFormatted: request.dateDeleted?.toLocaleString('en-US') || null,
+    }));
   }
 
   static async createRequest(data: CreateRequestData) {
@@ -52,7 +67,7 @@ export class RequestService {
   }
 
   // Mark request as completed (admin only)
-  static async completeRequest(id: number) {
+  static async completeRequest(id: number, notes?: string) {
     const [existingRequest] = await this.db
       .select({
         id: requestTable.id,
@@ -78,7 +93,10 @@ export class RequestService {
 
     const [updatedRequest] = await this.db
       .update(requestTable)
-      .set({ dateCompleted: new Date() })
+      .set({
+        dateCompleted: new Date(),
+        notes: notes?.trim() || null
+      })
       .where(eq(requestTable.id, id))
       .returning({
         id: requestTable.id,
@@ -89,7 +107,7 @@ export class RequestService {
   }
 
   // Soft delete a request (admin - any request, user - own request only)
-  static async deleteRequest(id: number, userId?: number) {
+  static async deleteRequest(id: number, userId?: number, notes?: string) {
     const whereCondition = userId
       ? and(eq(requestTable.id, id), eq(requestTable.userId, userId))
       : eq(requestTable.id, id);
@@ -114,7 +132,10 @@ export class RequestService {
 
     const [deletedRequest] = await this.db
       .update(requestTable)
-      .set({ dateDeleted: new Date() })
+      .set({
+        dateDeleted: new Date(),
+        notes: notes?.trim() || null
+      })
       .where(whereCondition)
       .returning({
         id: requestTable.id,

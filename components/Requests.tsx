@@ -1,5 +1,5 @@
-import React from 'react';
-import { Form, useNavigation } from 'react-router';
+import React, { useState } from 'react';
+import { Form } from 'react-router';
 import { Button } from './Button';
 
 interface Request {
@@ -10,6 +10,10 @@ interface Request {
   dateCreated: Date;
   dateCompleted: Date | null;
   dateDeleted: Date | null;
+  notes: string | null;
+  dateCreatedFormatted: string;
+  dateCompletedFormatted: string | null;
+  dateDeletedFormatted: string | null;
 }
 
 interface RequestsProps {
@@ -18,6 +22,7 @@ interface RequestsProps {
   showCompleted: boolean;
   showDeleted: boolean;
   isAdmin?: boolean;
+  isSubmitting?: boolean;
 }
 
 export function Requests({
@@ -25,9 +30,10 @@ export function Requests({
   showPending,
   showCompleted,
   showDeleted,
-  isAdmin = false
+  isAdmin = false,
+  isSubmitting = false
 }: RequestsProps) {
-  const navigation = useNavigation();
+  const [showNotesFor, setShowNotesFor] = useState<{[key: number]: 'complete' | 'delete' | null}>({});
 
   const filteredRequests = requests.filter((request) => {
     const isCompleted = request.dateCompleted !== null;
@@ -65,64 +71,149 @@ export function Requests({
                   {request.mediaType}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                  Requested on {new Date(request.dateCreated).toLocaleString()}
+                  Requested on {request.dateCreatedFormatted}
                 </p>
-                {isCompleted && request.dateCompleted && (
+                {isCompleted && request.dateCompletedFormatted && (
                   <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                    Completed on {new Date(request.dateCompleted).toLocaleString()}
+                    Completed on {request.dateCompletedFormatted}
                   </p>
                 )}
-                {isDeleted && request.dateDeleted && (
+                {isDeleted && request.dateDeletedFormatted && (
                   <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                    Deleted on {new Date(request.dateDeleted).toLocaleString()}
+                    Deleted on {request.dateDeletedFormatted}
                   </p>
                 )}
               </div>
               <div className="flex items-center gap-3">
-                <span className={`text-xs px-2 py-1 rounded-full ${
-                  status === "pending"
-                    ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-                    : status === "completed"
-                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                      : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                }`}>
-                  {status === "pending" ? "Pending" : status === "completed" ? "Completed" : "Deleted"}
-                </span>
-                {status === "pending" && (
-                  <div className="flex gap-2">
-                    {isAdmin && (
-                      <Form method="post" className="inline">
+                {status === "pending" && (showNotesFor[request.id] === 'complete' || (showNotesFor[request.id] === 'delete' && isAdmin)) ? (
+                  // Show notes form instead of status pill and buttons
+                  <div className="w-full">
+                    {showNotesFor[request.id] === 'complete' ? (
+                      <Form method="post" className="flex flex-col gap-2">
                         <input type="hidden" name="requestId" value={request.id} />
                         <input type="hidden" name="action" value="complete" />
-                        <Button
-                          type="submit"
-                          variant="success"
-                          disabled={navigation.state === "submitting"}
-                        >
-                          Mark Complete
-                        </Button>
+                        <textarea
+                          name="notes"
+                          placeholder="Optional completion note..."
+                          className="text-xs p-2 border border-gray-300 dark:border-gray-600 rounded resize-none dark:bg-gray-800 dark:text-gray-200"
+                          rows={2}
+                        />
+                        <div className="flex gap-1">
+                          <Button
+                            type="submit"
+                            variant="success"
+                            loading={isSubmitting}
+                            className="text-xs px-2 py-1"
+                          >
+                            Complete
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="info"
+                            onClick={() => setShowNotesFor(prev => ({ ...prev, [request.id]: null }))}
+                            className="text-xs px-2 py-1"
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </Form>
+                    ) : (
+                      <Form method="post" className="flex flex-col gap-2">
+                        <input type="hidden" name="requestId" value={request.id} />
+                        <input type="hidden" name="action" value="delete" />
+                        <textarea
+                          name="notes"
+                          placeholder="Optional deletion note..."
+                          className="text-xs p-2 border border-gray-300 dark:border-gray-600 rounded resize-none dark:bg-gray-800 dark:text-gray-200"
+                          rows={2}
+                        />
+                        <div className="flex gap-1">
+                          <Button
+                            type="submit"
+                            variant="alert"
+                            loading={isSubmitting}
+                            className="text-xs px-2 py-1"
+                            onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                              if (!confirm("Are you sure you want to delete this request?")) {
+                                e.preventDefault();
+                              }
+                            }}
+                          >
+                            Delete
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="info"
+                            onClick={() => setShowNotesFor(prev => ({ ...prev, [request.id]: null }))}
+                            className="text-xs px-2 py-1"
+                          >
+                            Cancel
+                          </Button>
+                        </div>
                       </Form>
                     )}
-                    <Form method="post" className="inline">
-                      <input type="hidden" name="requestId" value={request.id} />
-                      <input type="hidden" name="action" value="delete" />
-                      <Button
-                        type="submit"
-                        variant="alert"
-                        disabled={navigation.state === "submitting"}
-                        onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                          if (!confirm("Are you sure you want to delete this request?")) {
-                            e.preventDefault();
-                          }
-                        }}
-                      >
-                        Delete
-                      </Button>
-                    </Form>
                   </div>
+                ) : (
+                  <>
+                    <span className={`text-xs px-2 py-1 rounded-full ${
+                      status === "pending"
+                        ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                        : status === "completed"
+                          ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                          : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                    }`}>
+                      {status === "pending" ? "Pending" : status === "completed" ? "Completed" : "Deleted"}
+                    </span>
+                    {status === "pending" && (
+                      <div className="flex gap-2">
+                        {isAdmin && (
+                          <Button
+                            type="button"
+                            variant="success"
+                            onClick={() => setShowNotesFor(prev => ({ ...prev, [request.id]: 'complete' }))}
+                          >
+                            Complete
+                          </Button>
+                        )}
+                        {isAdmin ? (
+                          <Button
+                            type="button"
+                            variant="alert"
+                            onClick={() => setShowNotesFor(prev => ({ ...prev, [request.id]: 'delete' }))}
+                          >
+                            Delete
+                          </Button>
+                        ) : (
+                          <Form method="post" className="inline">
+                            <input type="hidden" name="requestId" value={request.id} />
+                            <input type="hidden" name="action" value="delete" />
+                            <Button
+                              type="submit"
+                              variant="alert"
+                              loading={isSubmitting}
+                              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                                if (!confirm("Are you sure you want to delete this request?")) {
+                                  e.preventDefault();
+                                }
+                              }}
+                            >
+                              Delete
+                            </Button>
+                          </Form>
+                        )}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
+            {request.notes && (
+              <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                <p className="text-xs text-gray-600 dark:text-gray-400 p-2 bg-gray-50 dark:bg-gray-800 rounded border-l-2 border-blue-500">
+                  <strong>Note:</strong> {request.notes}
+                </p>
+              </div>
+            )}
           </div>
         );
       })}

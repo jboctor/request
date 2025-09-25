@@ -1,5 +1,6 @@
 import type { Route } from "./+types/admin";
 import { useState } from "react";
+import { useNavigation } from "react-router";
 import { RequestService } from "~/services/requestService";
 import { RequestActionService } from "~/services/requestActionService";
 import { Button } from "~/components/Button";
@@ -28,6 +29,7 @@ export async function loader({}: Route.LoaderArgs) {
 }
 
 export default function Admin({ actionData, loaderData }: Route.ComponentProps) {
+  const navigation = useNavigation();
   const [showPending, setShowPending] = useState(true);
   const [showCompleted, setShowCompleted] = useState(false);
   const [showDeleted, setShowDeleted] = useState(false);
@@ -80,6 +82,7 @@ export default function Admin({ actionData, loaderData }: Route.ComponentProps) 
               showCompleted={showCompleted}
               showDeleted={showDeleted}
               isAdmin={true}
+              isSubmitting={navigation.state === "submitting"}
             />
           </section>
         </div>

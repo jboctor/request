@@ -18,4 +18,5 @@ export const request = pgTable("request", {
   dateCreated: timestamp().notNull().defaultNow(),
   dateCompleted: timestamp(),
   dateDeleted: timestamp(),
+  notes: varchar({ length: 500 }),
 });

@@ -106,9 +106,9 @@ export default function Home({ actionData, loaderData }: Route.ComponentProps) {
               <Button
                 type="submit"
                 variant="primary"
-                disabled={navigation.state === "submitting"}
+                loading={navigation.state === "submitting"}
               >
-                Sign In
+                {navigation.state === "submitting" ? "Signing In..." : "Sign In"}
               </Button>
             </Form>
           </section>

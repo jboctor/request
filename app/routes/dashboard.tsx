@@ -176,7 +176,7 @@ export default function Dashboard({ actionData, loaderData }: Route.ComponentPro
                   <Button
                     type="submit"
                     variant="primary"
-                    disabled={navigation.state === "submitting"}
+                    loading={navigation.state === "submitting"}
                   >
                     {navigation.state === "submitting" ? "Submitting..." : "Submit Request"}
                   </Button>
@@ -221,6 +221,7 @@ export default function Dashboard({ actionData, loaderData }: Route.ComponentPro
                   showCompleted={showCompleted}
                   showDeleted={showDeleted}
                   isAdmin={false}
+                  isSubmitting={navigation.state === "submitting"}
                 />
               </div>
             )}
