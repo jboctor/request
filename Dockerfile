@@ -15,9 +15,7 @@ WORKDIR /app
 RUN npm run build
 
 FROM node:24.8-trixie-slim
-COPY ./package.json package-lock.json server.js drizzle.config.ts /app/
-COPY ./drizzle /app/drizzle
-COPY ./scripts /app/scripts
+COPY ./package.json package-lock.json server.js /app/
 COPY --from=production-dependencies-env /app/node_modules /app/node_modules
 COPY --from=build-env /app/build /app/build
 WORKDIR /app
