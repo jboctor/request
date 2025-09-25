@@ -2,6 +2,6 @@ import "express-session";
 
 declare module "express-session" {
   interface Session {
-    user?: { id: number; email: string, isAdmin: boolean };
+    user?: { id: number; username: string; isAdmin: boolean };
   }
 }
