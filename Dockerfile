@@ -18,7 +18,8 @@ FROM node:24.8-trixie-slim
 COPY ./package.json package-lock.json server.js /app/
 COPY --from=production-dependencies-env /app/node_modules /app/node_modules
 COPY --from=build-env /app/build /app/build
-COPY --from=build-env /app/drizzle.config.js /app/drizzle.config.js
-COPY --from=build-env /app/drizzle /app/drizzle
+COPY ./drizzle.config.ts /app/
+COPY ./database /app/database
+COPY ./drizzle /app/drizzle
 WORKDIR /app
 CMD ["npm", "run", "start"]

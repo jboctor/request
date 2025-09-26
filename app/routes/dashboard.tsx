@@ -177,6 +177,7 @@ export default function Dashboard({ actionData, loaderData }: Route.ComponentPro
                     type="submit"
                     variant="primary"
                     loading={navigation.state === "submitting"}
+                    className="w-full h-10 px-3"
                   >
                     {navigation.state === "submitting" ? "Submitting..." : "Submit Request"}
                   </Button>

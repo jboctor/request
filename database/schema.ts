@@ -6,6 +6,7 @@ export const user = pgTable("user", {
   salt: varchar({ length: 255 }).notNull(),
   password: varchar({ length: 255 }).notNull(),
   isAdmin: boolean().notNull().default(false),
+  dateDeleted: timestamp(),
 });
 
 export const requestMediaTypeEnum = pgEnum('request_media_type', ['Book', 'Movie', 'TV Show']);

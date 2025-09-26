@@ -1,7 +1,7 @@
-import { database } from "~/database/context";
 import { PasswordManager } from "~/auth/password";
 import { AuthManager } from "~/auth/auth";
 import { Button } from "~/components/Button";
+import { UserService } from "~/services/userService";
 
 import type { Route } from "./+types/login";
 import { Form, useNavigation } from "react-router";
@@ -34,26 +34,20 @@ export async function action({ request, context }: Route.ActionArgs) {
     return { error: "Password is required" };
   }
 
-  const db = database();
-  let user = null;
   try {
-    user = await db.query.user.findFirst({
-      where: (fields, operators) => operators.eq(fields.username, username),
-      columns: {
-        id: true,
-        username: true,
-        salt: true,
-        password: true,
-        isAdmin: true
-      },
-    });
+    const user = await UserService.getUserByUsername(username);
 
     if (!user) {
       return { error: "User not found" };
     }
 
+    if (user.dateDeleted) {
+      return { error: "Account has been deactivated" };
+    }
+
     await authManager.login(user, password, context.session);
   } catch (error) {
+    console.error("Error during login:", error);
     return { error: "Database error", details: error instanceof Error ? error.message : String(error) };
   }
 
@@ -107,6 +101,7 @@ export default function Home({ actionData, loaderData }: Route.ComponentProps) {
                 type="submit"
                 variant="primary"
                 loading={navigation.state === "submitting"}
+                className="w-full h-10 px-3"
               >
                 {navigation.state === "submitting" ? "Signing In..." : "Sign In"}
               </Button>

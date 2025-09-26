@@ -1,10 +1,16 @@
 import * as argon2 from "argon2";
+import { randomBytes } from "crypto";
 
 export class PasswordManager {
   private pepper: string;
 
   constructor(pepper?: string) {
     this.pepper = pepper ?? "";
+  }
+
+  // Generate a cryptographically secure salt
+  static generateSalt(): string {
+    return randomBytes(16).toString('hex');
   }
 
   // Hash a password by prepending salt and appending pepper

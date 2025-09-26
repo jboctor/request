@@ -3,10 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "react-router build && tsc --build tsconfig.scripts.json && cp build/drizzle.config.js drizzle.config.js",
-    "manage-user": "dotenv -- tsx --tsconfig tsconfig.scripts.json scripts/manage-user.ts",
-    "manage-user-prod": "node build/scripts/manage-user.js",
-    "db:migrate-prod": "drizzle-kit migrate",
+    "build": "react-router build",
     "db:generate": "dotenv -- drizzle-kit generate",
     "db:migrate": "dotenv -- drizzle-kit migrate",
     "db:push": "dotenv -- drizzle-kit push",

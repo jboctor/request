@@ -10,7 +10,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles = {
   primary: {
-    base: 'w-full h-10 px-3 text-white bg-blue-500',
+    base: 'text-white bg-blue-500',
     hover: 'hover:bg-blue-600'
   },
   secondary: {

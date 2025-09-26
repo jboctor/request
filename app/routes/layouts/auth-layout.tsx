@@ -1,6 +1,7 @@
 import type { Route } from "./+types/auth-layout";
 import { Outlet, Form, redirect, Link, useLocation } from "react-router";
 import { Button } from "~/components/Button";
+import { database } from "~/database/context";
 
 function checkAuth(args?: Route.LoaderArgs) {
   const user = args?.context?.session?.user;
@@ -11,13 +12,43 @@ function checkAuth(args?: Route.LoaderArgs) {
 }
 
 export async function loader(args: Route.LoaderArgs) {
-  const user = checkAuth(args);
+  const sessionUser = checkAuth(args);
 
-  if (!user) {
+  if (!sessionUser) {
     return redirect("/");
   }
 
-  return { user };
+  // Verify user still exists and is not deleted
+  try {
+    const db = database();
+    const dbUser = await db.query.user.findFirst({
+      where: (fields, operators) => operators.eq(fields.id, sessionUser.id),
+      columns: {
+        id: true,
+        username: true,
+        isAdmin: true,
+        dateDeleted: true
+      },
+    });
+
+    if (!dbUser || dbUser.dateDeleted) {
+      // User has been deleted, destroy session and redirect to login
+      args.context.session.destroy(() => {});
+      return redirect("/");
+    }
+
+    // Update session with current user data (in case admin status changed)
+    const user = {
+      id: dbUser.id,
+      username: dbUser.username,
+      isAdmin: dbUser.isAdmin
+    };
+
+    return { user };
+  } catch (error) {
+    console.error("Error verifying user session:", error);
+    return redirect("/");
+  }
 }
 
 export default function AuthLayout({
@@ -54,6 +85,16 @@ export default function AuthLayout({
                 }`}
               >
                 Fulfillment
+              </Link>
+              <Link
+                to="/admin/users"
+                className={`px-3 py-1 rounded text-sm ${
+                  location.pathname === "/admin/users"
+                    ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100"
+                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                }`}
+              >
+                Users
               </Link>
             </nav>
           )}
