@@ -8,6 +8,7 @@ import { RequestActionService } from "~/services/requestActionService";
 import { Button } from "~/components/Button";
 import { Requests } from "~/components/Requests";
 import { FilteredItemsSection } from "~/components/FilteredItemsSection";
+import { SectionWrapper } from "~/components/SectionWrapper";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -123,7 +124,7 @@ export default function Dashboard({ actionData, loaderData }: Route.ComponentPro
           </div>
         </header>
         <div className="max-w-[700px] w-full space-y-6 px-4">
-          <section className="rounded-3xl border border-gray-200 p-6 dark:border-gray-700 space-y-4">
+          <section className="space-y-4">
             {/* Tab Navigation */}
             <div className="flex border-b border-gray-200 dark:border-gray-700">
               <button
@@ -150,7 +151,7 @@ export default function Dashboard({ actionData, loaderData }: Route.ComponentPro
 
             {/* Tab Content */}
             {activeTab === "request" ? (
-              <div>
+              <SectionWrapper>
                 <h2 className="text-center text-lg font-medium mb-4">Make a Request</h2>
                 <div className="text-sm text-gray-600 dark:text-gray-400 text-center mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                   💡 <strong>Tip:</strong> Please provide as much detail as possible in your request title, including author, release date, edition, or any other identifying information to help us find exactly what you're looking for.
@@ -197,7 +198,7 @@ export default function Dashboard({ actionData, loaderData }: Route.ComponentPro
                     {navigation.state === "submitting" ? "Submitting..." : "Submit Request"}
                   </Button>
                 </Form>
-              </div>
+              </SectionWrapper>
             ) : (
               <FilteredItemsSection
                 title="Your Requests"
