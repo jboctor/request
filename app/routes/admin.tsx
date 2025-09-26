@@ -1,6 +1,6 @@
 import type { Route } from "./+types/admin";
 import { useState, useEffect } from "react";
-import { useNavigation, useFetcher } from "react-router";
+import { useNavigation, useFetcher, useRouteLoaderData } from "react-router";
 import { RequestService } from "~/services/requestService";
 import { RequestActionService } from "~/services/requestActionService";
 import { Button } from "~/components/Button";
@@ -14,12 +14,13 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export async function action({ request }: Route.ActionArgs) {
+export async function action({ request, context }: Route.ActionArgs) {
   const formData = await request.formData();
+
   return await RequestActionService.handleFormAction(formData, undefined, true);
 }
 
-export async function loader({}: Route.LoaderArgs) {
+export async function loader({ context }: Route.LoaderArgs) {
   try {
     const requests = await RequestService.getAllRequests();
     return { requests };
@@ -32,6 +33,7 @@ export async function loader({}: Route.LoaderArgs) {
 export default function Admin({ actionData, loaderData }: Route.ComponentProps) {
   const navigation = useNavigation();
   const fetcher = useFetcher<typeof loader>();
+  const rootData = useRouteLoaderData("root") as { csrfToken?: string };
   const [showPending, setShowPending] = useState(true);
   const [showCompleted, setShowCompleted] = useState(false);
   const [showDeleted, setShowDeleted] = useState(false);
@@ -92,6 +94,7 @@ export default function Admin({ actionData, loaderData }: Route.ComponentProps) 
               showDeleted={showDeleted}
               isAdmin={true}
               isSubmitting={navigation.state === "submitting"}
+              csrfToken={rootData?.csrfToken || ""}
             />
           </FilteredItemsSection>
         </div>

@@ -6,11 +6,10 @@
     "app/**/.server/**/*",
     "app/**/.client/**/*",
     "database/**/*",
-    "auth/**/*",
     "server/**/*",
     "types/**/*",
     "components/**/*",
-    "scripts/**/*"
+    "utils/**/*"
   ],
   "compilerOptions": {
     "composite": true,
@@ -26,7 +25,7 @@
     "paths": {
       "~/components/*": ["./components/*"],
       "~/database/*": ["./database/*"],
-      "~/auth/*": ["./auth/*"],
+      "~/utils/*": ["./utils/*"],
       "~/*": ["./app/*"]
     },
     "esModuleInterop": true,

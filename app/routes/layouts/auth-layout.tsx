@@ -19,35 +19,55 @@ export async function loader(args: Route.LoaderArgs) {
     return redirect("/");
   }
 
-  // Verify user still exists and is not deleted
-  try {
-    const db = database();
-    const dbUser = await db.query.user.findFirst({
-      where: (fields, operators) => operators.eq(fields.id, sessionUser.id),
-      columns: {
-        id: true,
-        username: true,
-        isAdmin: true,
-        dateDeleted: true
-      },
-    });
+  const now = Date.now();
+  const lastValidated = args.context.session.lastValidated || 0;
+  const validationInterval = 5 * 60 * 1000; // 5 minutes
+  const needsValidation = (now - lastValidated) > validationInterval;
 
-    if (!dbUser || dbUser.dateDeleted) {
-      args.context.session.destroy(() => {});
+  if (needsValidation) {
+    try {
+      const db = database();
+      const dbUser = await db.query.user.findFirst({
+        where: (fields, operators) => operators.eq(fields.id, sessionUser.id),
+        columns: {
+          id: true,
+          username: true,
+          isAdmin: true,
+          dateDeleted: true
+        },
+      });
+
+      if (!dbUser || dbUser.dateDeleted) {
+        // User has been deleted, destroy session and redirect to login
+        args.context.session.destroy(() => {});
+        return redirect("/");
+      }
+
+      // Update session with current user data and validation timestamp
+      args.context.session.user = {
+        id: dbUser.id,
+        username: dbUser.username,
+        isAdmin: dbUser.isAdmin
+      };
+      args.context.session.lastValidated = now;
+
+      // Save session with updated data
+      await new Promise<void>((resolve, reject) => {
+        args.context.session.save((err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+
+      return { user: args.context.session.user };
+    } catch (error) {
+      console.error("Error verifying user session:", error);
       return redirect("/");
     }
-
-    const user = {
-      id: dbUser.id,
-      username: dbUser.username,
-      isAdmin: dbUser.isAdmin
-    };
-
-    return { user };
-  } catch (error) {
-    console.error("Error verifying user session:", error);
-    return redirect("/");
   }
+
+  // Use cached session data (no DB query needed)
+  return { user: sessionUser };
 }
 
 export default function AuthLayout({

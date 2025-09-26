@@ -9,6 +9,29 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { CSRFProtection } from "~/utils/csrf";
+
+export async function loader({ context }: Route.LoaderArgs) {
+  // Ensure CSRF token is available globally
+  const csrfToken = CSRFProtection.getToken(context.session);
+  return { csrfToken };
+}
+
+export async function action({ request, context }: Route.ActionArgs) {
+  // Global CSRF validation for all POST requests
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
+    const formData = await request.formData();
+    const csrfToken = formData.get("csrfToken") as string;
+
+    if (!CSRFProtection.verifyToken(context.session, csrfToken)) {
+      return { error: "Invalid request. Please try again." };
+    }
+  }
+
+  // If CSRF validation passes, continue to child route action
+  // React Router will automatically delegate to the matching child route
+  return null;
+}
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },

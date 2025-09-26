@@ -3,5 +3,7 @@ import "express-session";
 declare module "express-session" {
   interface Session {
     user?: { id: number; username: string; isAdmin: boolean };
+    lastValidated?: number;
+    csrfToken?: string;
   }
 }

@@ -1,14 +1,11 @@
-import { PasswordManager } from "~/auth/password";
-import { AuthManager } from "~/auth/auth";
+import { AuthService } from "~/services/authService";
 import { Button } from "~/components/Button";
 import { UserService } from "~/services/userService";
 
 import type { Route } from "./+types/login";
-import { Form, useNavigation, useNavigate } from "react-router";
+import { Form, useNavigation, useNavigate, useRouteLoaderData } from "react-router";
 import { redirect } from "react-router";
 import { useEffect } from "react";
-
-const authManager = new AuthManager(new PasswordManager(process.env.PASSWORD_PEPPER));
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -28,6 +25,7 @@ export async function loader({ context }: Route.LoaderArgs) {
 
 export async function action({ request, context }: Route.ActionArgs) {
   const formData = await request.formData();
+
   let username = formData.get("username");
   let password = formData.get("password");
   if (typeof username !== "string" || typeof password !== "string") {
@@ -55,7 +53,7 @@ export async function action({ request, context }: Route.ActionArgs) {
       return { error: "Account has been deactivated" };
     }
 
-    await authManager.login(user, password, context.session);
+    await AuthService.login(user, password, context.session);
   } catch (error) {
     console.error("Error during login:", error);
     return { error: "Database error", details: error instanceof Error ? error.message : String(error) };
@@ -67,6 +65,7 @@ export async function action({ request, context }: Route.ActionArgs) {
 export default function Home({ actionData, loaderData }: Route.ComponentProps) {
   const navigation = useNavigation();
   const navigate = useNavigate();
+  const rootData = useRouteLoaderData("root") as { csrfToken?: string };
 
   useEffect(() => {
     if (loaderData?.isAuthenticated && typeof window !== "undefined") {
@@ -114,6 +113,9 @@ export default function Home({ actionData, loaderData }: Route.ComponentProps) {
                 });
               }}
             >
+              {/* CSRF Protection Token - Hidden from user but included in form submission */}
+              <input type="hidden" name="csrfToken" value={rootData?.csrfToken || ""} />
+
               <input
                 name="username"
                 placeholder="Username"

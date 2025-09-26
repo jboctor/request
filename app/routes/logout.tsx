@@ -1,17 +1,12 @@
 import type { Route } from "./+types/logout";
 import { redirect } from "react-router";
-import { PasswordManager } from "~/auth/password";
-import { AuthManager } from "~/auth/auth";
+import { AuthService } from "~/services/authService";
 
-const authManager = new AuthManager(new PasswordManager());
-
-export async function action({ request, context }: Route.ActionArgs) {
+export async function action({ context }: Route.ActionArgs) {
   try {
-    authManager.logout(context.session);
+    AuthService.logout(context.session);
     return redirect("/");
   } catch (error) {
     return { error: "Logout failed", details: error instanceof Error ? error.message : String(error) };
   }
-
-  return null;
 }

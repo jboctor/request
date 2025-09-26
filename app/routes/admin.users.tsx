@@ -1,6 +1,6 @@
 import type { Route } from "./+types/admin.users";
 import { useState, useEffect } from "react";
-import { useNavigation, Form } from "react-router";
+import { useNavigation, Form, useRouteLoaderData } from "react-router";
 import { Button } from "~/components/Button";
 import { UserService } from "~/services/userService";
 import { FilteredItemsSection } from "~/components/FilteredItemsSection";
@@ -15,6 +15,7 @@ export function meta({}: Route.MetaArgs) {
 
 export async function action({ request, context }: Route.ActionArgs) {
   const formData = await request.formData();
+
   const action = formData.get("action") as string;
   const currentUserId = context?.session?.user?.id;
 
@@ -106,7 +107,6 @@ export async function loader({ context }: Route.LoaderArgs) {
     const users = await UserService.getAllUsers();
     const currentUserId = context?.session?.user?.id;
     const adminCount = users.filter(user => user.isAdmin && !user.dateDeleted).length;
-
     return {
       users,
       currentUserId,
@@ -120,6 +120,7 @@ export async function loader({ context }: Route.LoaderArgs) {
 
 export default function AdminUsers({ actionData, loaderData }: Route.ComponentProps) {
   const navigation = useNavigation();
+  const rootData = useRouteLoaderData("root") as { csrfToken?: string };
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showPasswordResetFor, setShowPasswordResetFor] = useState<{[key: number]: boolean}>({});
   const [showActive, setShowActive] = useState(true);
@@ -178,6 +179,7 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
 
             {showCreateForm && (
               <Form method="post" className="space-y-4">
+                <input type="hidden" name="csrfToken" value={rootData?.csrfToken || ""} />
                 <input type="hidden" name="action" value="create" />
                 <div>
                   <label className="block text-sm font-medium mb-1">Username</label>
@@ -285,6 +287,7 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
                             // Show password reset form instead of buttons
                             <div className="w-full">
                               <Form method="post" className="flex flex-col gap-2">
+                                <input type="hidden" name="csrfToken" value={rootData?.csrfToken || ""} />
                                 <input type="hidden" name="action" value="reset-password" />
                                 <input type="hidden" name="userId" value={user.id} />
                                 <input
@@ -330,6 +333,7 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
                               <div className="flex gap-2">
                                 {isDeleted ? (
                                   <Form method="post" className="inline">
+                                    <input type="hidden" name="csrfToken" value={rootData?.csrfToken || ""} />
                                     <input type="hidden" name="action" value="restore" />
                                     <input type="hidden" name="userId" value={user.id} />
                                     <Button
@@ -343,6 +347,7 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
                                 ) : (
                                   <>
                                     <Form method="post" className="inline">
+                                      <input type="hidden" name="csrfToken" value={rootData?.csrfToken || ""} />
                                       <input type="hidden" name="action" value="toggle-admin" />
                                       <input type="hidden" name="userId" value={user.id} />
                                       <Button
@@ -362,6 +367,7 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
                                     </Button>
 
                                     <Form method="post" className="inline">
+                                      <input type="hidden" name="csrfToken" value={rootData?.csrfToken || ""} />
                                       <input type="hidden" name="action" value="delete" />
                                       <input type="hidden" name="userId" value={user.id} />
                                       <Button

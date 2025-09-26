@@ -1,6 +1,6 @@
 import { database } from "~/database/context";
 import * as schema from "~/database/schema";
-import { PasswordManager } from "~/auth/password";
+import { PasswordManager } from "~/utils/password";
 import { eq } from "drizzle-orm";
 
 export interface CreateUserData {
@@ -17,7 +17,6 @@ export interface User {
 }
 
 export class UserService {
-  private static passwordManager = new PasswordManager(process.env.PASSWORD_PEPPER);
   private static db = database();
 
   static async getAllUsers(): Promise<User[]> {
@@ -45,7 +44,7 @@ export class UserService {
     }
 
     const salt = PasswordManager.generateSalt();
-    const hashedPassword = await this.passwordManager.hashPassword(data.password, salt);
+    const hashedPassword = await PasswordManager.hashPassword(data.password, salt);
 
     const [newUser] = await this.db.insert(schema.user).values({
       username: data.username,
@@ -93,7 +92,7 @@ export class UserService {
 
   static async resetPassword(userId: number, newPassword: string): Promise<void> {
     const salt = PasswordManager.generateSalt();
-    const hashedPassword = await this.passwordManager.hashPassword(newPassword, salt);
+    const hashedPassword = await PasswordManager.hashPassword(newPassword, salt);
 
     await this.db.update(schema.user)
       .set({ salt, password: hashedPassword })

@@ -1,5 +1,5 @@
 import type { Route } from "./+types/dashboard";
-import { Form, useNavigation, useFetcher } from "react-router";
+import { Form, useNavigation, useFetcher, useRouteLoaderData } from "react-router";
 import { useState, useEffect } from "react";
 import { requestMediaTypeEnum } from "~/database/schema";
 import { redirect } from "react-router";
@@ -19,6 +19,7 @@ export function meta({}: Route.MetaArgs) {
 
 export async function action({ request, context }: Route.ActionArgs) {
   const formData = await request.formData();
+
   const action = formData.get("action");
 
   const user = context.session?.user;
@@ -82,6 +83,7 @@ export default function Dashboard({ actionData, loaderData }: Route.ComponentPro
   const [showDeleted, setShowDeleted] = useState(false);
   const navigation = useNavigation();
   const fetcher = useFetcher<typeof loader>();
+  const rootData = useRouteLoaderData("root") as { csrfToken?: string };
 
   useEffect(() => {
     const savedTab = localStorage.getItem("dashboard-active-tab");
@@ -163,6 +165,9 @@ export default function Dashboard({ actionData, loaderData }: Route.ComponentPro
                   <div className="text-green-600 text-center mb-4">{actionData.success}</div>
                 )}
                 <Form method="post" className="space-y-4">
+                  {/* CSRF Protection Token */}
+                  <input type="hidden" name="csrfToken" value={rootData?.csrfToken || ""} />
+
                   <div>
                     <select
                       name="mediaType"
@@ -233,6 +238,7 @@ export default function Dashboard({ actionData, loaderData }: Route.ComponentPro
                   showDeleted={showDeleted}
                   isAdmin={false}
                   isSubmitting={navigation.state === "submitting"}
+                  csrfToken={rootData?.csrfToken || ""}
                 />
               </FilteredItemsSection>
             )}

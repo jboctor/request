@@ -23,6 +23,7 @@ interface RequestsProps {
   showDeleted: boolean;
   isAdmin?: boolean;
   isSubmitting?: boolean;
+  csrfToken?: string;
 }
 
 export function Requests({
@@ -31,7 +32,8 @@ export function Requests({
   showCompleted,
   showDeleted,
   isAdmin = false,
-  isSubmitting = false
+  isSubmitting = false,
+  csrfToken = ""
 }: RequestsProps) {
   const [showNotesFor, setShowNotesFor] = useState<{[key: number]: 'complete' | 'delete' | null}>({});
 
@@ -107,6 +109,7 @@ export function Requests({
                   <div className="w-full">
                     {showNotesFor[request.id] === 'complete' ? (
                       <Form method="post" className="flex flex-col gap-2">
+                        <input type="hidden" name="csrfToken" value={csrfToken} />
                         <input type="hidden" name="requestId" value={request.id} />
                         <input type="hidden" name="action" value="complete" />
                         <textarea
@@ -136,6 +139,7 @@ export function Requests({
                       </Form>
                     ) : (
                       <Form method="post" className="flex flex-col gap-2">
+                        <input type="hidden" name="csrfToken" value={csrfToken} />
                         <input type="hidden" name="requestId" value={request.id} />
                         <input type="hidden" name="action" value="delete" />
                         <textarea
@@ -202,6 +206,7 @@ export function Requests({
                           </Button>
                         ) : (
                           <Form method="post" className="inline">
+                            <input type="hidden" name="csrfToken" value={csrfToken} />
                             <input type="hidden" name="requestId" value={request.id} />
                             <input type="hidden" name="action" value="delete" />
                             <Button
