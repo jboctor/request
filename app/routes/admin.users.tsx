@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { useNavigation, Form } from "react-router";
 import { Button } from "~/components/Button";
 import { UserService } from "~/services/userService";
+import { FilteredItemsSection } from "~/components/FilteredItemsSection";
+import { SectionWrapper } from "~/components/SectionWrapper";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -163,7 +165,7 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
 
         <div className="max-w-[700px] w-full space-y-6 px-4">
           {/* Create User Form */}
-          <section className="rounded-3xl border border-gray-200 p-6 dark:border-gray-700">
+          <SectionWrapper>
             <div className="flex justify-between items-center">
               <h2 className="text-lg font-medium">Create User</h2>
               <Button
@@ -218,48 +220,41 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
                 </Button>
               </Form>
             )}
-          </section>
+          </SectionWrapper>
 
           {/* Users List */}
-          <section className="rounded-3xl border border-gray-200 p-6 dark:border-gray-700">
-            <h2 className="text-lg font-medium mb-4">Users ({filteredUsers.length} of {loaderData?.users?.length || 0})</h2>
-
-            {/* Filter Controls */}
-            <div className="flex justify-center gap-2 mb-6 flex-wrap">
-              <Button
-                variant={showActive ? "success" : "info"}
-                onClick={() => setShowActive(!showActive)}
-              >
-                {showActive ? "Hide" : "Show"} Active ({loaderData?.users?.filter(u => !u.dateDeleted).length || 0})
-              </Button>
-              <Button
-                variant={showDeleted ? "alert" : "info"}
-                onClick={() => setShowDeleted(!showDeleted)}
-              >
-                {showDeleted ? "Hide" : "Show"} Deleted ({loaderData?.users?.filter(u => u.dateDeleted).length || 0})
-              </Button>
-              <Button
-                variant={showAdmins ? "primary" : "info"}
-                onClick={() => setShowAdmins(!showAdmins)}
-              >
-                {showAdmins ? "Hide" : "Show"} Admins ({loaderData?.users?.filter(u => u.isAdmin).length || 0})
-              </Button>
-              <Button
-                variant={showRegular ? "primary" : "info"}
-                onClick={() => setShowRegular(!showRegular)}
-              >
-                {showRegular ? "Hide" : "Show"} Users ({loaderData?.users?.filter(u => !u.isAdmin).length || 0})
-              </Button>
-            </div>
-
-            {/* Messages */}
-            {actionData?.error && (
-              <div className="text-red-600 text-center mb-4">{actionData.error}</div>
-            )}
-            {actionData?.success && (
-              <div className="text-green-600 text-center mb-4">{actionData.success}</div>
-            )}
-
+          <FilteredItemsSection
+            title={`Users (${filteredUsers.length} of ${loaderData?.users?.length || 0})`}
+            actionData={actionData}
+            filterControls={
+              <>
+                <Button
+                  variant={showActive ? "success" : "info"}
+                  onClick={() => setShowActive(!showActive)}
+                >
+                  {showActive ? "Hide" : "Show"} Active ({loaderData?.users?.filter(u => !u.dateDeleted).length || 0})
+                </Button>
+                <Button
+                  variant={showDeleted ? "alert" : "info"}
+                  onClick={() => setShowDeleted(!showDeleted)}
+                >
+                  {showDeleted ? "Hide" : "Show"} Deleted ({loaderData?.users?.filter(u => u.dateDeleted).length || 0})
+                </Button>
+                <Button
+                  variant={showAdmins ? "primary" : "info"}
+                  onClick={() => setShowAdmins(!showAdmins)}
+                >
+                  {showAdmins ? "Hide" : "Show"} Admins ({loaderData?.users?.filter(u => u.isAdmin).length || 0})
+                </Button>
+                <Button
+                  variant={showRegular ? "primary" : "info"}
+                  onClick={() => setShowRegular(!showRegular)}
+                >
+                  {showRegular ? "Hide" : "Show"} Users ({loaderData?.users?.filter(u => !u.isAdmin).length || 0})
+                </Button>
+              </>
+            }
+          >
             {!filteredUsers.length ? (
               <div className="text-center text-gray-500 dark:text-gray-400 py-8">
                 {!loaderData?.users?.length ? "No users found." : "No users match your current filters."}
@@ -394,7 +389,7 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
                 })}
               </div>
             )}
-          </section>
+          </FilteredItemsSection>
         </div>
 
       </div>

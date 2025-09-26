@@ -1,10 +1,11 @@
 import type { Route } from "./+types/admin";
-import { useState } from "react";
-import { useNavigation } from "react-router";
+import { useState, useEffect } from "react";
+import { useNavigation, useFetcher } from "react-router";
 import { RequestService } from "~/services/requestService";
 import { RequestActionService } from "~/services/requestActionService";
 import { Button } from "~/components/Button";
 import { Requests } from "~/components/Requests";
+import { FilteredItemsSection } from "~/components/FilteredItemsSection";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -30,9 +31,23 @@ export async function loader({}: Route.LoaderArgs) {
 
 export default function Admin({ actionData, loaderData }: Route.ComponentProps) {
   const navigation = useNavigation();
+  const fetcher = useFetcher<typeof loader>();
   const [showPending, setShowPending] = useState(true);
   const [showCompleted, setShowCompleted] = useState(false);
   const [showDeleted, setShowDeleted] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        fetcher.load("/admin");
+      }
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [fetcher]);
+
+  // Use fetcher data if available, fallback to loaderData
+  const currentRequests = fetcher.data?.requests || loaderData?.requests || [];
 
   return (
     <main className="flex items-center justify-center pt-16 pb-4">
@@ -44,47 +59,41 @@ export default function Admin({ actionData, loaderData }: Route.ComponentProps) 
           </div>
         </header>
         <div className="max-w-[700px] w-full space-y-6 px-4">
-          <section className="rounded-3xl border border-gray-200 p-6 dark:border-gray-700 space-y-4">
-            <h2 className="text-center text-lg font-medium mb-4">All Requests</h2>
-
-            {/* Filter Controls */}
-            <div className="flex justify-center gap-4 mb-4">
-              <Button
-                variant={showPending ? "warning" : "info"}
-                onClick={() => setShowPending(!showPending)}
-              >
-                {showPending ? "Hide" : "Show"} Pending
-              </Button>
-              <Button
-                variant={showCompleted ? "success" : "info"}
-                onClick={() => setShowCompleted(!showCompleted)}
-              >
-                {showCompleted ? "Hide" : "Show"} Completed
-              </Button>
-              <Button
-                variant={showDeleted ? "alert" : "info"}
-                onClick={() => setShowDeleted(!showDeleted)}
-              >
-                {showDeleted ? "Hide" : "Show"} Deleted
-              </Button>
-            </div>
-
-            {actionData?.error && (
-              <div className="text-red-600 text-center mb-4">{actionData.error}</div>
-            )}
-            {actionData?.success && (
-              <div className="text-green-600 text-center mb-4">{actionData.success}</div>
-            )}
-            
+          <FilteredItemsSection
+            title="All Requests"
+            actionData={actionData}
+            filterControls={
+              <>
+                <Button
+                  variant={showPending ? "warning" : "info"}
+                  onClick={() => setShowPending(!showPending)}
+                >
+                  {showPending ? "Hide" : "Show"} Pending
+                </Button>
+                <Button
+                  variant={showCompleted ? "success" : "info"}
+                  onClick={() => setShowCompleted(!showCompleted)}
+                >
+                  {showCompleted ? "Hide" : "Show"} Completed
+                </Button>
+                <Button
+                  variant={showDeleted ? "alert" : "info"}
+                  onClick={() => setShowDeleted(!showDeleted)}
+                >
+                  {showDeleted ? "Hide" : "Show"} Deleted
+                </Button>
+              </>
+            }
+          >
             <Requests
-              requests={loaderData?.requests || []}
+              requests={currentRequests}
               showPending={showPending}
               showCompleted={showCompleted}
               showDeleted={showDeleted}
               isAdmin={true}
               isSubmitting={navigation.state === "submitting"}
             />
-          </section>
+          </FilteredItemsSection>
         </div>
       </div>
     </main>

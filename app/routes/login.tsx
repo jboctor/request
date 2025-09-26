@@ -4,8 +4,9 @@ import { Button } from "~/components/Button";
 import { UserService } from "~/services/userService";
 
 import type { Route } from "./+types/login";
-import { Form, useNavigation } from "react-router";
+import { Form, useNavigation, useNavigate } from "react-router";
 import { redirect } from "react-router";
+import { useEffect } from "react";
 
 const authManager = new AuthManager(new PasswordManager(process.env.PASSWORD_PEPPER));
 
@@ -14,6 +15,15 @@ export function meta({}: Route.MetaArgs) {
     { title: "John Boctor Services" },
     { name: "description", content: "Welcome to John Boctor Services!" },
   ];
+}
+
+export async function loader({ context }: Route.LoaderArgs) {
+  const user = context.session?.user;
+  if (user?.id && user?.username) {
+    return { isAuthenticated: true };
+  }
+
+  return { isAuthenticated: false };
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
@@ -56,6 +66,26 @@ export async function action({ request, context }: Route.ActionArgs) {
 
 export default function Home({ actionData, loaderData }: Route.ComponentProps) {
   const navigation = useNavigation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (loaderData?.isAuthenticated && typeof window !== "undefined") {
+      const lastAdminPage = localStorage.getItem("last-admin-page");
+      const redirectTo = lastAdminPage || "/dashboard";
+      navigate(redirectTo, { replace: true });
+    }
+  }, [loaderData?.isAuthenticated, navigate]);
+
+  if (loaderData?.isAuthenticated) {
+    return (
+      <main className="flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+          <p className="text-gray-600 dark:text-gray-400">Redirecting...</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="flex items-center justify-center pt-16 pb-4">

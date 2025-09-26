@@ -1,5 +1,5 @@
 import type { Route } from "./+types/dashboard";
-import { Form, useNavigation } from "react-router";
+import { Form, useNavigation, useFetcher } from "react-router";
 import { useState, useEffect } from "react";
 import { requestMediaTypeEnum } from "~/database/schema";
 import { redirect } from "react-router";
@@ -7,6 +7,7 @@ import { RequestService } from "~/services/requestService";
 import { RequestActionService } from "~/services/requestActionService";
 import { Button } from "~/components/Button";
 import { Requests } from "~/components/Requests";
+import { FilteredItemsSection } from "~/components/FilteredItemsSection";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -76,9 +77,10 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 export default function Dashboard({ actionData, loaderData }: Route.ComponentProps) {
   const [activeTab, setActiveTab] = useState<"request" | "view">("request");
   const [showPending, setShowPending] = useState(true);
-  const [showCompleted, setShowCompleted] = useState(false);
+  const [showCompleted, setShowCompleted] = useState(true);
   const [showDeleted, setShowDeleted] = useState(false);
   const navigation = useNavigation();
+  const fetcher = useFetcher<typeof loader>();
 
   useEffect(() => {
     const savedTab = localStorage.getItem("dashboard-active-tab");
@@ -93,10 +95,23 @@ export default function Dashboard({ actionData, loaderData }: Route.ComponentPro
     }
   }, [actionData?.success, navigation.state]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        fetcher.load("/dashboard");
+      }
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [fetcher]);
+
   const handleTabChange = (tab: "request" | "view") => {
     setActiveTab(tab);
     localStorage.setItem("dashboard-active-tab", tab);
   };
+
+  // Use fetcher data if available, fallback to loaderData
+  const currentRequests = fetcher.data?.requests || loaderData?.requests || [];
 
   return (
     <main className="flex items-center justify-center pt-16 pb-4">
@@ -184,47 +199,41 @@ export default function Dashboard({ actionData, loaderData }: Route.ComponentPro
                 </Form>
               </div>
             ) : (
-              <div>
-                <h2 className="text-center text-lg font-medium mb-4">Your Requests</h2>
-
-                {/* Filter Controls */}
-                <div className="flex justify-center gap-4 mb-4">
-                  <Button
-                    variant={showPending ? "warning" : "info"}
-                    onClick={() => setShowPending(!showPending)}
-                  >
-                    {showPending ? "Hide" : "Show"} Pending
-                  </Button>
-                  <Button
-                    variant={showCompleted ? "success" : "info"}
-                    onClick={() => setShowCompleted(!showCompleted)}
-                  >
-                    {showCompleted ? "Hide" : "Show"} Completed
-                  </Button>
-                  <Button
-                    variant={showDeleted ? "alert" : "info"}
-                    onClick={() => setShowDeleted(!showDeleted)}
-                  >
-                    {showDeleted ? "Hide" : "Show"} Deleted
-                  </Button>
-                </div>
-
-                {actionData?.error && (
-                  <div className="text-red-600 text-center mb-4">{actionData.error}</div>
-                )}
-                {actionData?.success && (
-                  <div className="text-green-600 text-center mb-4">{actionData.success}</div>
-                )}
-            
+              <FilteredItemsSection
+                title="Your Requests"
+                actionData={actionData}
+                filterControls={
+                  <>
+                    <Button
+                      variant={showPending ? "warning" : "info"}
+                      onClick={() => setShowPending(!showPending)}
+                    >
+                      {showPending ? "Hide" : "Show"} Pending
+                    </Button>
+                    <Button
+                      variant={showCompleted ? "success" : "info"}
+                      onClick={() => setShowCompleted(!showCompleted)}
+                    >
+                      {showCompleted ? "Hide" : "Show"} Completed
+                    </Button>
+                    <Button
+                      variant={showDeleted ? "alert" : "info"}
+                      onClick={() => setShowDeleted(!showDeleted)}
+                    >
+                      {showDeleted ? "Hide" : "Show"} Deleted
+                    </Button>
+                  </>
+                }
+              >
                 <Requests
-                  requests={loaderData?.requests || []}
+                  requests={currentRequests}
                   showPending={showPending}
                   showCompleted={showCompleted}
                   showDeleted={showDeleted}
                   isAdmin={false}
                   isSubmitting={navigation.state === "submitting"}
                 />
-              </div>
+              </FilteredItemsSection>
             )}
           </section>
         </div>

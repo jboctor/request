@@ -45,6 +45,23 @@ export function Requests({
     if (isPending) return showPending;
 
     return false;
+  }).sort((a, b) => {
+    const aIsCompleted = a.dateCompleted !== null;
+    const aIsDeleted = a.dateDeleted !== null;
+    const aIsPending = !aIsCompleted && !aIsDeleted;
+
+    const bIsCompleted = b.dateCompleted !== null;
+    const bIsDeleted = b.dateDeleted !== null;
+    const bIsPending = !bIsCompleted && !bIsDeleted;
+
+    // Sort order: pending first, then completed, then deleted
+    if (aIsPending && !bIsPending) return -1;
+    if (!aIsPending && bIsPending) return 1;
+    if (aIsCompleted && bIsDeleted) return -1;
+    if (aIsDeleted && bIsCompleted) return 1;
+
+    // Within same status, sort by date created (newest first)
+    return new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime();
   });
 
   if (filteredRequests.length === 0) {

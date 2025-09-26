@@ -1,6 +1,7 @@
 import type { Route } from "./+types/auth-layout";
-import { Outlet, Form, redirect, Link, useLocation } from "react-router";
+import { Outlet, Form, redirect } from "react-router";
 import { Button } from "~/components/Button";
+import { Navigation } from "~/components/Navigation";
 import { database } from "~/database/context";
 
 function checkAuth(args?: Route.LoaderArgs) {
@@ -32,12 +33,10 @@ export async function loader(args: Route.LoaderArgs) {
     });
 
     if (!dbUser || dbUser.dateDeleted) {
-      // User has been deleted, destroy session and redirect to login
       args.context.session.destroy(() => {});
       return redirect("/");
     }
 
-    // Update session with current user data (in case admin status changed)
     const user = {
       id: dbUser.id,
       username: dbUser.username,
@@ -55,59 +54,50 @@ export default function AuthLayout({
   loaderData
 }: Route.ComponentProps) {
   const { user } = loaderData;
-  const location = useLocation();
 
   return (
     <div>
-      <header className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center gap-6">
+      {/* Desktop: Single row layout (sticky entire header) */}
+      <header className="hidden md:block sticky top-0 z-10 bg-green-100 dark:bg-green-900 p-4 border-b border-green-300 dark:border-green-700">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-6">
+            <span className="text-green-800 dark:text-white">
+              Logged in: {user.username}
+            </span>
+            {user.isAdmin && <Navigation />}
+          </div>
+          <Form method="post" action="/logout">
+            <Button
+              type="submit"
+              variant="secondary"
+            >
+              Logout
+            </Button>
+          </Form>
+        </div>
+      </header>
+
+      {/* Mobile: Top row - User info and logout (not sticky) */}
+      <div className="md:hidden p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex justify-between items-center">
           <span className="text-gray-900 dark:text-gray-100">
             Logged in: {user.username}
           </span>
-          {user.isAdmin && (
-            <nav className="flex gap-4">
-              <Link
-                to="/dashboard"
-                className={`px-3 py-1 rounded text-sm ${
-                  location.pathname === "/dashboard"
-                    ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100"
-                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-                }`}
-              >
-                Dashboard
-              </Link>
-              <Link
-                to="/admin"
-                className={`px-3 py-1 rounded text-sm ${
-                  location.pathname === "/admin"
-                    ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100"
-                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-                }`}
-              >
-                Fulfillment
-              </Link>
-              <Link
-                to="/admin/users"
-                className={`px-3 py-1 rounded text-sm ${
-                  location.pathname === "/admin/users"
-                    ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100"
-                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-                }`}
-              >
-                Users
-              </Link>
-            </nav>
-          )}
+          <Form method="post" action="/logout">
+            <Button
+              type="submit"
+              variant="secondary"
+            >
+              Logout
+            </Button>
+          </Form>
         </div>
-        <Form method="post" action="/logout">
-          <Button
-            type="submit"
-            variant="secondary"
-          >
-            Logout
-          </Button>
-        </Form>
-      </header>
+      </div>
+
+      {/* Mobile: Navigation (sticky) */}
+      {user.isAdmin && (
+        <Navigation className="md:hidden sticky top-0 z-10 bg-green-100 dark:bg-green-900 p-4 border-b border-green-300 dark:border-green-700" />
+      )}
       <Outlet />
     </div>
   );
