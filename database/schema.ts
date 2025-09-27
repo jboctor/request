@@ -9,7 +9,7 @@ export const user = pgTable("user", {
   dateDeleted: timestamp(),
 });
 
-export const requestMediaTypeEnum = pgEnum('request_media_type', ['Book', 'Movie', 'TV Show']);
+export const requestMediaTypeEnum = pgEnum('request_media_type', ['Audio Book', 'Book', 'Movie', 'TV Show', 'Site Suggestion']);
 
 export const request = pgTable("request", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
