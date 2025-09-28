@@ -1,5 +1,5 @@
 import type { Route } from "./+types/admin.users";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigation, Form, useRouteLoaderData } from "react-router";
 import { Button } from "~/components/Button";
 import { UserService } from "~/services/userService";
@@ -127,6 +127,7 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
   const [showDeleted, setShowDeleted] = useState(false);
   const [showAdmins, setShowAdmins] = useState(true);
   const [showRegular, setShowRegular] = useState(true);
+  const createFormRef = useRef<HTMLFormElement>(null);
 
   const isSubmitting = navigation.state === "submitting";
 
@@ -136,6 +137,13 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
       setShowPasswordResetFor({});
     }
   }, [actionData?.success]);
+
+  // Clear create user form on successful user creation
+  useEffect(() => {
+    if (actionData?.success && !isSubmitting) {
+      setShowCreateForm(false);
+    }
+  }, [actionData?.success, isSubmitting]);
 
   const filteredUsers = loaderData?.users?.filter((user) => {
     const isDeleted = user.dateDeleted !== null;
@@ -178,7 +186,7 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
             </div>
 
             {showCreateForm && (
-              <Form method="post" className="space-y-4">
+              <Form ref={createFormRef} method="post" className="space-y-4">
                 <input type="hidden" name="csrfToken" value={rootData?.csrfToken || ""} />
                 <input type="hidden" name="action" value="create" />
                 <div>
@@ -330,7 +338,7 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
                               }`}>
                                 {isDeleted ? "Deleted" : user.isAdmin ? "Admin" : "User"}
                               </span>
-                              <div className="flex gap-2">
+                              <div className="flex flex-col sm:flex-row gap-2">
                                 {isDeleted ? (
                                   <Form method="post" className="inline">
                                     <input type="hidden" name="csrfToken" value={rootData?.csrfToken || ""} />
