@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigation, Form, useRouteLoaderData } from "react-router";
 import { Button } from "~/components/Button";
 import { UserService } from "~/services/userService";
+import { RequestService } from "~/services/requestService";
 import { FilteredItemsSection } from "~/components/FilteredItemsSection";
 import { SectionWrapper } from "~/components/SectionWrapper";
 
@@ -47,6 +48,14 @@ export async function action({ request, context }: Route.ActionArgs) {
         }
 
         await UserService.deleteUser(userId);
+
+        const userRequests = await RequestService.getUserRequests(userId);
+        await Promise.all(
+          userRequests
+            .filter(req => !req.dateDeleted && !req.dateCompleted)
+            .map(req => RequestService.deleteRequest(req.id))
+        );
+
         return { success: "User deleted successfully" };
       }
 
@@ -106,8 +115,28 @@ export async function loader({ context }: Route.LoaderArgs) {
     const users = await UserService.getAllUsers();
     const currentUserId = context?.session?.user?.id;
     const adminCount = users.filter(user => user.isAdmin && !user.dateDeleted).length;
+
+    const usersWithEmail = await Promise.all(
+      users.map(async (user) => {
+        try {
+          const email = await UserService.getUserEmail(user.id);
+          return {
+            ...user,
+            email: email?.email || null,
+            allowNotifications: email?.allowNotifications || false
+          };
+        } catch {
+          return {
+            ...user,
+            email: null,
+            allowNotifications: false
+          };
+        }
+      })
+    );
+
     return {
-      users,
+      users: usersWithEmail,
       currentUserId,
       adminCount
     };
@@ -275,7 +304,21 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
                     <div key={user.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
                       <div className="flex justify-between items-center">
                         <div className="flex-1">
-                          <h3 className="font-medium">{user.username}</h3>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-medium">{user.username}</h3>
+                            {user.email && (
+                              <span
+                                title={user.email}
+                                className="inline-flex items-center"
+                              >
+                                {user.allowNotifications ? (
+                                  <span className="w-2 h-2 rounded-full bg-green-500" title={user.email}></span>
+                                ) : (
+                                  <span className="w-2 h-2 rounded-full border border-gray-400 dark:border-gray-500" title={user.email}></span>
+                                )}
+                              </span>
+                            )}
+                          </div>
                           <p className="text-sm text-gray-600 dark:text-gray-400">
                             User ID: {user.id}
                           </p>
