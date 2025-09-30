@@ -35,6 +35,9 @@ export class EmailService {
         to: options.to,
         subject: options.subject,
         html: options.html,
+        headers: {
+          'X-MT-Category': 'notification'
+        }
       });
       console.log(`Email sent successfully to ${options.to}`);
     } catch (error) {
