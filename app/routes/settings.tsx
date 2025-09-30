@@ -105,7 +105,6 @@ export default function Settings({ actionData, loaderData }: Route.ComponentProp
   const [activeSection, setActiveSection] = useState<"password" | "email">("email");
   const passwordFormRef = useRef<HTMLFormElement>(null);
 
-  // Reset password form on successful password change
   useEffect(() => {
     if (actionData?.success && navigation.state === "idle") {
       passwordFormRef.current?.reset();
@@ -126,6 +125,7 @@ export default function Settings({ actionData, loaderData }: Route.ComponentProp
           <div className="flex border-b border-gray-200 dark:border-gray-700">
             <button
               onClick={() => setActiveSection("email")}
+              id="email-settings-button"
               className={`px-4 py-2 text-sm font-medium border-b-2 ${
                 activeSection === "email"
                   ? "border-blue-500 text-blue-600 dark:text-blue-400"
@@ -136,6 +136,7 @@ export default function Settings({ actionData, loaderData }: Route.ComponentProp
             </button>
             <button
               onClick={() => setActiveSection("password")}
+              id="password-settings-button"
               className={`px-4 py-2 text-sm font-medium border-b-2 ${
                 activeSection === "password"
                   ? "border-blue-500 text-blue-600 dark:text-blue-400"
@@ -159,7 +160,7 @@ export default function Settings({ actionData, loaderData }: Route.ComponentProp
 
           {/* Change Password Section */}
           {activeSection === "password" && (
-            <SectionWrapper>
+            <SectionWrapper id="password-settings-section">
               <h2 className="text-lg font-medium mb-4">Change Password</h2>
               <Form ref={passwordFormRef} method="post" className="space-y-4">
                 <input type="hidden" name="csrfToken" value={rootData?.csrfToken || ""} />
@@ -220,7 +221,7 @@ export default function Settings({ actionData, loaderData }: Route.ComponentProp
 
           {/* Email Address Section */}
           {activeSection === "email" && (
-            <SectionWrapper>
+            <SectionWrapper id="email-settings-section">
               <h2 className="text-lg font-medium mb-4">Email Address</h2>
               {loaderData?.email ? (
                 <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">

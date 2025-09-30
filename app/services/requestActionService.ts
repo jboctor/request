@@ -1,4 +1,6 @@
 import { RequestService } from './requestService';
+import { UserService } from './userService';
+import { EmailService } from './emailService';
 
 export interface FormActionResult {
   success?: string;
@@ -35,11 +37,37 @@ export class RequestActionService {
 
       if (action === "complete") {
         const updatedRequest = await RequestService.completeRequest(id, notes || undefined);
+
+        // Send email notification if user has email and notifications enabled
+        const userEmail = await UserService.getUserEmail(updatedRequest.userId);
+        if (userEmail && userEmail.allowNotifications) {
+          EmailService.sendRequestCompletedEmail(
+            userEmail.email,
+            updatedRequest.title,
+            updatedRequest.mediaType,
+            notes || undefined
+          );
+        }
+
         return { success: `Request "${updatedRequest.title}" marked as completed` };
       }
 
       if (action === "delete") {
         const deletedRequest = await RequestService.deleteRequest(id, userId, notes || undefined);
+
+        // Send email notification if admin deleted (not user self-delete) and user has email with notifications enabled
+        if (!userId) {
+          const userEmail = await UserService.getUserEmail(deletedRequest.userId);
+          if (userEmail && userEmail.allowNotifications) {
+            EmailService.sendRequestDeletedEmail(
+              userEmail.email,
+              deletedRequest.title,
+              deletedRequest.mediaType,
+              notes || undefined
+            );
+          }
+        }
+
         return { success: `Request "${deletedRequest.title}" deleted successfully` };
       }
 

@@ -99,6 +99,7 @@ export default function AdminFeatures({ actionData, loaderData }: Route.Componen
   // Common page options for the dropdown
   const pageOptions = [
     { value: '/dashboard', label: 'Dashboard' },
+    { value: '/settings', label: 'Settings' },
     { value: '/admin', label: 'Admin Panel' },
     { value: '/admin/users', label: 'User Management' },
     { value: '/admin/features', label: 'Feature Management' },

@@ -42,7 +42,6 @@ export class RequestService {
     }));
   }
 
-  // Get requests for a specific user (for dashboard)
   static async getUserRequests(userId: number) {
     const requests = await this.db
       .select()
@@ -66,12 +65,13 @@ export class RequestService {
     });
   }
 
-  // Mark request as completed (admin only)
   static async completeRequest(id: number, notes?: string) {
     const [existingRequest] = await this.db
       .select({
         id: requestTable.id,
         title: requestTable.title,
+        mediaType: requestTable.mediaType,
+        userId: requestTable.userId,
         dateCompleted: requestTable.dateCompleted,
         dateDeleted: requestTable.dateDeleted
       })
@@ -100,13 +100,14 @@ export class RequestService {
       .where(eq(requestTable.id, id))
       .returning({
         id: requestTable.id,
-        title: requestTable.title
+        title: requestTable.title,
+        userId: requestTable.userId,
+        mediaType: requestTable.mediaType
       });
 
     return updatedRequest;
   }
 
-  // Soft delete a request (admin - any request, user - own request only)
   static async deleteRequest(id: number, userId?: number, notes?: string) {
     const whereCondition = userId
       ? and(eq(requestTable.id, id), eq(requestTable.userId, userId))
@@ -116,6 +117,8 @@ export class RequestService {
       .select({
         id: requestTable.id,
         title: requestTable.title,
+        mediaType: requestTable.mediaType,
+        userId: requestTable.userId,
         dateCompleted: requestTable.dateCompleted
       })
       .from(requestTable)
@@ -139,7 +142,9 @@ export class RequestService {
       .where(whereCondition)
       .returning({
         id: requestTable.id,
-        title: requestTable.title
+        title: requestTable.title,
+        userId: requestTable.userId,
+        mediaType: requestTable.mediaType
       });
 
     return deletedRequest;
