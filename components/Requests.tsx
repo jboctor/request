@@ -24,6 +24,7 @@ interface RequestsProps extends React.HTMLAttributes<HTMLDivElement> {
   isAdmin?: boolean;
   isSubmitting?: boolean;
   csrfToken?: string;
+  sortOrder?: 'oldest' | 'newest';
 }
 
 export function Requests({
@@ -34,6 +35,7 @@ export function Requests({
   isAdmin = false,
   isSubmitting = false,
   csrfToken = "",
+  sortOrder = 'newest',
   ...props
 }: RequestsProps) {
   const [showNotesFor, setShowNotesFor] = useState<{[key: number]: 'complete' | 'delete' | null}>({});
@@ -63,8 +65,12 @@ export function Requests({
     if (aIsCompleted && bIsDeleted) return -1;
     if (aIsDeleted && bIsCompleted) return 1;
 
-    // Within same status, sort by date created (newest first)
-    return new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime();
+    // Within same status, sort by date created
+    if (sortOrder === 'oldest') {
+      return new Date(a.dateCreated).getTime() - new Date(b.dateCreated).getTime();
+    } else {
+      return new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime();
+    }
   });
 
   if (filteredRequests.length === 0) {

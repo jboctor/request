@@ -131,8 +131,14 @@ export default function FeatureLayout({ loaderData }: Route.ComponentProps) {
         stickyParent.style.zIndex = '9999';
         stickyParent.style.position = 'relative';
 
+        // Store original styles for restoration
+        const originalBorderColor = stickyParent.style.borderColor;
+        const originalOverflow = stickyParent.style.overflow;
+        stickyParent.style.borderColor = 'rgba(0, 0, 0, 0.5)';
+        stickyParent.style.overflow = 'visible';
+
         const localCurtain = document.createElement('div');
-        localCurtain.className = 'absolute inset-0 bg-black/75 backdrop-blur-sm z-10';
+        localCurtain.className = 'absolute inset-0 bg-black/75 backdrop-blur-sm z-10 pointer-events-none';
         localCurtain.classList.add('local-curtain');
         stickyParent.appendChild(localCurtain);
 
@@ -152,6 +158,8 @@ export default function FeatureLayout({ loaderData }: Route.ComponentProps) {
         cleanupFunctions.push(() => {
           stickyParent.style.zIndex = '';
           stickyParent.style.position = '';
+          stickyParent.style.borderColor = originalBorderColor;
+          stickyParent.style.overflow = originalOverflow;
 
           localCurtain.remove();
 

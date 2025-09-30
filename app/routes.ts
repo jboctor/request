@@ -7,6 +7,7 @@ export default [
     layout("routes/layouts/auth-layout.tsx", [
         layout("routes/layouts/feature-layout.tsx", [
             route("/dashboard", "routes/dashboard.tsx"),
+            route("/settings", "routes/settings.tsx"),
         ]),
         layout("routes/layouts/admin-layout.tsx", [
             route("/admin", "routes/admin.tsx"),

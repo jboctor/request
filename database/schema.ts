@@ -38,3 +38,12 @@ export const userFeatureDismissal = pgTable("user_feature_dismissal", {
   featureId: integer().notNull().references(() => newFeature.id),
   dateDismissed: timestamp().notNull().defaultNow(),
 });
+
+export const userEmail = pgTable("user_email", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  userId: integer().notNull().references(() => user.id).unique(),
+  email: varchar({ length: 255 }).notNull(),
+  allowNotifications: boolean().notNull().default(false),
+  dateCreated: timestamp().notNull().defaultNow(),
+  dateUpdated: timestamp(),
+});

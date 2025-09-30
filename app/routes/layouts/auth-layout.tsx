@@ -1,5 +1,5 @@
 import type { Route } from "./+types/auth-layout";
-import { Outlet, Form, redirect } from "react-router";
+import { Outlet, Form, redirect, Link, useLocation } from "react-router";
 import { Button } from "~/components/Button";
 import { Navigation } from "~/components/Navigation";
 import { database } from "~/database/context";
@@ -70,6 +70,7 @@ export default function AuthLayout({
   loaderData
 }: Route.ComponentProps) {
   const { user } = loaderData;
+  const location = useLocation();
 
   return (
     <div>
@@ -77,9 +78,16 @@ export default function AuthLayout({
       <header className="hidden md:block sticky top-0 bg-green-100 dark:bg-green-900 p-4 border-b border-green-300 dark:border-green-700">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-6">
-            <span className="px-3 py-1 text-green-800 dark:text-white bg-green-100 dark:bg-green-900 logged-in-user">
+            <Link
+              to="/settings"
+              className={`px-3 py-1 rounded text-sm logged-in-user ${
+                location.pathname === "/settings"
+                  ? "bg-green-600 text-white"
+                  : "text-green-800 dark:text-white hover:bg-green-200 hover:text-green-900 dark:hover:bg-green-800 dark:hover:text-green-100"
+              }`}
+            >
               Logged in: {user.username}
-            </span>
+            </Link>
             {user.isAdmin && <Navigation />}
           </div>
           <Form method="post" action="/logout">
@@ -96,9 +104,16 @@ export default function AuthLayout({
       {/* Mobile: Top row - User info and logout (not sticky) */}
       <div className="md:hidden p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex justify-between items-center">
-          <span className="px-3 py-1 text-gray-900 dark:text-gray-100 logged-in-user">
+          <Link
+            to="/settings"
+            className={`px-3 py-1 rounded text-sm logged-in-user ${
+              location.pathname === "/settings"
+                ? "bg-green-600 text-white"
+                : "text-gray-900 dark:text-gray-100 hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+            }`}
+          >
             Logged in: {user.username}
-          </span>
+          </Link>
           <Form method="post" action="/logout">
             <Button
               type="submit"
@@ -112,7 +127,9 @@ export default function AuthLayout({
 
       {/* Mobile: Navigation (sticky) */}
       {user.isAdmin && (
-        <Navigation className="md:hidden sticky top-0 z-10 bg-green-100 dark:bg-green-900 p-4 border-b border-green-300 dark:border-green-700" />
+        <div className="md:hidden sticky top-0 z-10 bg-green-100 dark:bg-green-900 border-b border-green-300 dark:border-green-700 overflow-x-auto">
+          <Navigation className="p-4 whitespace-nowrap" />
+        </div>
       )}
       <Outlet />
     </div>

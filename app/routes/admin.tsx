@@ -95,6 +95,7 @@ export default function Admin({ actionData, loaderData }: Route.ComponentProps) 
               isAdmin={true}
               isSubmitting={navigation.state === "submitting"}
               csrfToken={rootData?.csrfToken || ""}
+              sortOrder="oldest"
             />
           </FilteredItemsSection>
         </div>

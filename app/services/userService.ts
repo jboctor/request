@@ -146,4 +146,95 @@ export class UserService {
 
     return user || null;
   }
+
+  static async changePassword(userId: number, currentPassword: string, newPassword: string): Promise<void> {
+    // Get user with password and salt
+    const user = await this.db.query.user.findFirst({
+      where: eq(schema.user.id, userId),
+      columns: {
+        id: true,
+        password: true,
+        salt: true
+      }
+    });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Verify current password
+    const isValid = await PasswordManager.verifyPassword(user.password, currentPassword, user.salt);
+    if (!isValid) {
+      throw new Error("Current password is incorrect");
+    }
+
+    // Validate new password
+    const validation = this.validatePassword(newPassword);
+    if (!validation.isValid) {
+      throw new Error(validation.error || "Invalid password");
+    }
+
+    // Hash and update password
+    const salt = PasswordManager.generateSalt();
+    const hashedPassword = await PasswordManager.hashPassword(newPassword, salt);
+
+    await this.db.update(schema.user)
+      .set({ salt, password: hashedPassword })
+      .where(eq(schema.user.id, userId));
+  }
+
+  static async getUserEmail(userId: number): Promise<{ email: string; allowNotifications: boolean } | null> {
+    const userEmail = await this.db.query.userEmail.findFirst({
+      where: eq(schema.userEmail.userId, userId),
+      columns: { email: true, allowNotifications: true }
+    });
+
+    return userEmail || null;
+  }
+
+  static async setUserEmail(userId: number, email: string, allowNotifications?: boolean): Promise<void> {
+    const existingEmail = await this.db.query.userEmail.findFirst({
+      where: eq(schema.userEmail.userId, userId),
+      columns: { id: true }
+    });
+
+    if (existingEmail) {
+      await this.db.update(schema.userEmail)
+        .set({
+          email: email.trim(),
+          dateUpdated: new Date()
+        })
+        .where(eq(schema.userEmail.userId, userId));
+    } else {
+      // Insert new email
+      await this.db.insert(schema.userEmail).values({
+        userId,
+        email: email.trim(),
+        allowNotifications: allowNotifications ?? false
+      });
+    }
+  }
+
+  static async toggleNotifications(userId: number): Promise<boolean> {
+    const userEmail = await this.db.query.userEmail.findFirst({
+      where: eq(schema.userEmail.userId, userId),
+      columns: { allowNotifications: true }
+    });
+
+    if (!userEmail) {
+      throw new Error("Email not found");
+    }
+
+    const newValue = !userEmail.allowNotifications;
+    await this.db.update(schema.userEmail)
+      .set({ allowNotifications: newValue, dateUpdated: new Date() })
+      .where(eq(schema.userEmail.userId, userId));
+
+    return newValue;
+  }
+
+  static async removeUserEmail(userId: number): Promise<void> {
+    await this.db.delete(schema.userEmail)
+      .where(eq(schema.userEmail.userId, userId));
+  }
 }
