@@ -37,7 +37,6 @@ export async function action({ request, context }: Route.ActionArgs) {
     return { error: "Username is required" };
   }
 
-  password = password.trim();
   if (!password) {
     return { error: "Password is required" };
   }
@@ -46,7 +45,7 @@ export async function action({ request, context }: Route.ActionArgs) {
     const user = await UserService.getUserByUsername(username);
 
     if (!user) {
-      return { error: "User not found" };
+      return { error: "Invalid username or password" };
     }
 
     if (user.dateDeleted) {
@@ -55,8 +54,8 @@ export async function action({ request, context }: Route.ActionArgs) {
 
     await AuthService.login(user, password, context.session);
   } catch (error) {
-    console.error("Error during login:", error);
-    return { error: "Database error", details: error instanceof Error ? error.message : String(error) };
+    console.error("Login error:", error);
+    return { error: "Invalid username or password" };
   }
 
   return redirect("/dashboard");

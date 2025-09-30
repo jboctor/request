@@ -20,8 +20,17 @@ export async function loader({ context }: Route.LoaderArgs) {
 export async function action({ request, context }: Route.ActionArgs) {
   // Global CSRF validation for all POST requests
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
-    const formData = await request.formData();
-    const csrfToken = formData.get("csrfToken") as string;
+    let csrfToken: string | null = null;
+
+    const contentType = request.headers.get("content-type");
+
+    if (contentType?.includes("application/json")) {
+      const body = await request.json();
+      csrfToken = body.csrfToken;
+    } else {
+      const formData = await request.formData();
+      csrfToken = formData.get("csrfToken") as string;
+    }
 
     if (!CSRFProtection.verifyToken(context.session, csrfToken)) {
       return { error: "Invalid request. Please try again." };

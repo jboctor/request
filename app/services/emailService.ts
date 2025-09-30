@@ -6,6 +6,17 @@ export interface EmailOptions {
   html: string;
 }
 
+function escapeHtml(text: string): string {
+  const map: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, (m) => map[m]);
+}
+
 export class EmailService {
   private static transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
@@ -36,7 +47,7 @@ export class EmailService {
         subject: options.subject,
         html: options.html,
         headers: {
-          'X-MT-Category': 'notification'
+          'X-MT-Category': 'Notification'
         }
       });
       console.log(`Email sent successfully to ${options.to}`);
@@ -86,16 +97,16 @@ export class EmailService {
               <h1 style="margin: 0; font-size: 20px; font-weight: 600;">✓ Request Completed</h1>
             </div>
             <div class="content" style="background-color: #f3f4f6; padding: 30px; border-radius: 0 0 8px 8px;">
-              <p>Good news! Your <strong>${requestMediaType}</strong> request has been completed and is ready for you.</p>
+              <p>Good news! Your <strong>${escapeHtml(requestMediaType)}</strong> request has been completed and is ready for you.</p>
 
               <div class="detail-box" style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0; border-left: 4px solid #16a34a;">
-                <div class="value" style="color: #111827;">${requestTitle}</div>
+                <div class="value" style="color: #111827;">${escapeHtml(requestTitle)}</div>
               </div>
 
               ${notes ? `
                 <div class="note-box" style="background-color: #f0fdf4; border: 1px solid #86efac; padding: 15px; border-radius: 6px; margin-top: 15px;">
                   <div class="label" style="font-weight: bold; color: #6b7280;">Note from admin</div>
-                  <div class="value" style="color: #111827; margin-top: 5px;">${notes}</div>
+                  <div class="value" style="color: #111827; margin-top: 5px;">${escapeHtml(notes)}</div>
                 </div>
               ` : ''}
 
@@ -150,16 +161,16 @@ export class EmailService {
               <h1 style="margin: 0; font-size: 20px; font-weight: 600;">✕ Request Removed</h1>
             </div>
             <div class="content" style="background-color: #f3f4f6; padding: 30px; border-radius: 0 0 8px 8px;">
-              <p>Your <strong>${requestMediaType}</strong> request has been removed from the queue.</p>
+              <p>Your <strong>${escapeHtml(requestMediaType)}</strong> request has been removed from the queue.</p>
 
               <div class="detail-box" style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0; border-left: 4px solid #dc2626;">
-                <div class="value" style="color: #111827;">${requestTitle}</div>
+                <div class="value" style="color: #111827;">${escapeHtml(requestTitle)}</div>
               </div>
 
               ${notes ? `
                 <div class="note-box" style="background-color: #fef2f2; border: 1px solid #fca5a5; padding: 15px; border-radius: 6px; margin-top: 15px;">
                   <div class="label" style="font-weight: bold; color: #6b7280;">Reason</div>
-                  <div class="value" style="color: #111827; margin-top: 5px;">${notes}</div>
+                  <div class="value" style="color: #111827; margin-top: 5px;">${escapeHtml(notes)}</div>
                 </div>
               ` : ''}
 

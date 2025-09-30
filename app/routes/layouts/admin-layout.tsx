@@ -8,7 +8,6 @@ export async function loader(args: Route.LoaderArgs) {
     return redirect("/dashboard");
   }
 
-  // Verify user still has admin privileges in database
   try {
     const dbUser = await UserService.getUserById(sessionUser.id);
 
