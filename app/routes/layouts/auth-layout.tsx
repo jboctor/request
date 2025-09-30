@@ -21,7 +21,7 @@ export async function loader(args: Route.LoaderArgs) {
 
   const now = Date.now();
   const lastValidated = args.context.session.lastValidated || 0;
-  const validationInterval = 5 * 60 * 1000; // 5 minutes
+  const validationInterval = 5 * 60 * 1000;
   const needsValidation = (now - lastValidated) > validationInterval;
 
   if (needsValidation) {
@@ -38,12 +38,10 @@ export async function loader(args: Route.LoaderArgs) {
       });
 
       if (!dbUser || dbUser.dateDeleted) {
-        // User has been deleted, destroy session and redirect to login
         args.context.session.destroy(() => {});
         return redirect("/");
       }
 
-      // Update session with current user data and validation timestamp
       args.context.session.user = {
         id: dbUser.id,
         username: dbUser.username,
@@ -51,7 +49,6 @@ export async function loader(args: Route.LoaderArgs) {
       };
       args.context.session.lastValidated = now;
 
-      // Save session with updated data
       await new Promise<void>((resolve, reject) => {
         args.context.session.save((err) => {
           if (err) reject(err);
@@ -66,7 +63,6 @@ export async function loader(args: Route.LoaderArgs) {
     }
   }
 
-  // Use cached session data (no DB query needed)
   return { user: sessionUser };
 }
 
@@ -78,10 +74,10 @@ export default function AuthLayout({
   return (
     <div>
       {/* Desktop: Single row layout (sticky entire header) */}
-      <header className="hidden md:block sticky top-0 z-10 bg-green-100 dark:bg-green-900 p-4 border-b border-green-300 dark:border-green-700">
+      <header className="hidden md:block sticky top-0 bg-green-100 dark:bg-green-900 p-4 border-b border-green-300 dark:border-green-700">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-6">
-            <span className="text-green-800 dark:text-white">
+            <span className="px-3 py-1 text-green-800 dark:text-white bg-green-100 dark:bg-green-900 logged-in-user">
               Logged in: {user.username}
             </span>
             {user.isAdmin && <Navigation />}
@@ -100,7 +96,7 @@ export default function AuthLayout({
       {/* Mobile: Top row - User info and logout (not sticky) */}
       <div className="md:hidden p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex justify-between items-center">
-          <span className="text-gray-900 dark:text-gray-100">
+          <span className="px-3 py-1 text-gray-900 dark:text-gray-100 logged-in-user">
             Logged in: {user.username}
           </span>
           <Form method="post" action="/logout">

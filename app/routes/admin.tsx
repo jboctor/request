@@ -56,11 +56,11 @@ export default function Admin({ actionData, loaderData }: Route.ComponentProps) 
       <div className="flex-1 flex flex-col items-center gap-16 min-h-0">
         <header className="flex flex-col items-center gap-9">
           <h1 className="sr-only">Request Fulfillment</h1>
-          <div className="w-[700px] max-w-[100vw] p-4">
+          <div className="w-[900px] max-w-[100vw] p-4">
             <h1 className="block w-full text-center text-2xl">Request Fulfillment</h1>
           </div>
         </header>
-        <div className="max-w-[700px] w-full space-y-6 px-4">
+        <div className="max-w-[900px] w-full space-y-6 px-4">
           <FilteredItemsSection
             title="All Requests"
             actionData={actionData}

@@ -16,7 +16,7 @@ interface Request {
   dateDeletedFormatted: string | null;
 }
 
-interface RequestsProps {
+interface RequestsProps extends React.HTMLAttributes<HTMLDivElement> {
   requests: Request[];
   showPending: boolean;
   showCompleted: boolean;
@@ -33,7 +33,8 @@ export function Requests({
   showDeleted,
   isAdmin = false,
   isSubmitting = false,
-  csrfToken = ""
+  csrfToken = "",
+  ...props
 }: RequestsProps) {
   const [showNotesFor, setShowNotesFor] = useState<{[key: number]: 'complete' | 'delete' | null}>({});
 
@@ -68,14 +69,14 @@ export function Requests({
 
   if (filteredRequests.length === 0) {
     return (
-      <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+      <div {...props} className="text-center text-gray-500 dark:text-gray-400 py-8">
         {requests.length === 0 ? "No requests found." : "No requests match your current filters."}
       </div>
     );
   }
 
   return (
-    <div className="space-y-3">
+    <div {...props} className="space-y-3">
       {filteredRequests.map((request) => {
         const isCompleted = request.dateCompleted !== null;
         const isDeleted = request.dateDeleted !== null;

@@ -21,3 +21,20 @@ export const request = pgTable("request", {
   dateDeleted: timestamp(),
   notes: varchar({ length: 500 }),
 });
+
+export const newFeature = pgTable("new_feature", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  page: varchar({ length: 255 }).notNull(),
+  selector: varchar({ length: 255 }).notNull(),
+  title: varchar({ length: 255 }).notNull(),
+  description: varchar({ length: 1000 }).notNull(),
+  dateCreated: timestamp().notNull().defaultNow(),
+  isActive: boolean().notNull().default(true),
+});
+
+export const userFeatureDismissal = pgTable("user_feature_dismissal", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  userId: integer().notNull().references(() => user.id),
+  featureId: integer().notNull().references(() => newFeature.id),
+  dateDismissed: timestamp().notNull().defaultNow(),
+});

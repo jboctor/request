@@ -1,7 +1,7 @@
 import React from 'react';
 import { SectionWrapper } from './SectionWrapper';
 
-interface FilteredItemsSectionProps {
+interface FilteredItemsSectionProps extends React.HTMLAttributes<HTMLElement> {
   title: string;
   children: React.ReactNode;
   actionData?: {
@@ -15,10 +15,11 @@ export function FilteredItemsSection({
   title,
   children,
   actionData,
-  filterControls
+  filterControls,
+  ...props
 }: FilteredItemsSectionProps) {
   return (
-    <SectionWrapper>
+    <SectionWrapper {...props}>
       <h2 className="text-center text-lg font-medium mb-4">{title}</h2>
 
       {/* Filter Controls */}

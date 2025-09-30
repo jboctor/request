@@ -1,11 +1,10 @@
 import { Link, useLocation } from "react-router";
 import { useEffect } from "react";
 
-interface NavigationProps {
-  className?: string;
+interface NavigationProps extends React.HTMLAttributes<HTMLElement> {
 }
 
-export function Navigation({ className = "" }: NavigationProps) {
+export function Navigation({ className = "", ...props }: NavigationProps) {
   const location = useLocation();
 
   // Save current admin page to localStorage when navigating
@@ -16,7 +15,10 @@ export function Navigation({ className = "" }: NavigationProps) {
   }, [location.pathname]);
 
   return (
-    <nav className={`flex gap-4 ${className}`}>
+    <nav
+      {...props}
+      className={`flex gap-4 ${className}`}
+    >
       <Link
         to="/dashboard"
         className={`px-3 py-1 rounded text-sm ${
@@ -46,6 +48,16 @@ export function Navigation({ className = "" }: NavigationProps) {
         }`}
       >
         Users
+      </Link>
+      <Link
+        to="/admin/features"
+        className={`px-3 py-1 rounded text-sm ${
+          location.pathname === "/admin/features"
+            ? "bg-green-600 text-white"
+            : "text-green-800 dark:text-green-200 hover:bg-green-200 hover:text-green-900 dark:hover:bg-green-800 dark:hover:text-green-100"
+        }`}
+      >
+        Features
       </Link>
     </nav>
   );

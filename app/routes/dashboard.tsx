@@ -113,7 +113,6 @@ export default function Dashboard({ actionData, loaderData }: Route.ComponentPro
     localStorage.setItem("dashboard-active-tab", tab);
   };
 
-  // Use fetcher data if available, fallback to loaderData
   const currentRequests = fetcher.data?.requests || loaderData?.requests || [];
 
   return (
@@ -121,11 +120,11 @@ export default function Dashboard({ actionData, loaderData }: Route.ComponentPro
       <div className="flex-1 flex flex-col items-center gap-16 min-h-0">
         <header className="flex flex-col items-center gap-9">
           <h1 className="sr-only">Hello</h1>
-          <div className="w-[700px] max-w-[100vw] p-4">
+          <div className="w-[900px] max-w-[100vw] p-4">
             <h1 className="block w-full text-center text-2xl">Welcome to John Boctor Services</h1>
           </div>
         </header>
-        <div className="max-w-[700px] w-full space-y-6 px-4">
+        <div className="max-w-[900px] w-full space-y-6 px-4">
           <section className="space-y-4">
             {/* Tab Navigation */}
             <div className="flex border-b border-gray-200 dark:border-gray-700">
@@ -153,7 +152,7 @@ export default function Dashboard({ actionData, loaderData }: Route.ComponentPro
 
             {/* Tab Content */}
             {activeTab === "request" ? (
-              <SectionWrapper>
+              <SectionWrapper id="request-service">
                 <h2 className="text-center text-lg font-medium mb-4">Make a Request</h2>
                 <div className="text-sm text-gray-600 dark:text-gray-400 text-center mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                   💡 <strong>Tip:</strong> Please provide as much detail as possible in your request title, including author, release date, edition, or any other identifying information to help us find exactly what you're looking for.
