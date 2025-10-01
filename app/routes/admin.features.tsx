@@ -221,12 +221,12 @@ export default function AdminFeatures({ actionData, loaderData }: Route.Componen
                           <span><strong>Created:</strong> {feature.dateCreatedFormatted}</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 ml-4">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 ml-4">
                         <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                           Active
                         </span>
-                        <div className="flex gap-2">
-                          <Form method="post" className="inline">
+                        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                          <Form method="post" className="w-full sm:w-auto">
                             <input type="hidden" name="csrfToken" value={rootData?.csrfToken || ""} />
                             <input type="hidden" name="action" value="clear-dismissals" />
                             <input type="hidden" name="featureId" value={feature.id} />
@@ -239,11 +239,12 @@ export default function AdminFeatures({ actionData, loaderData }: Route.Componen
                                   e.preventDefault();
                                 }
                               }}
+                              className="w-full sm:w-auto"
                             >
                               Reset
                             </Button>
                           </Form>
-                          <Form method="post" className="inline">
+                          <Form method="post" className="w-full sm:w-auto">
                             <input type="hidden" name="csrfToken" value={rootData?.csrfToken || ""} />
                             <input type="hidden" name="action" value="deactivate" />
                             <input type="hidden" name="featureId" value={feature.id} />
@@ -256,6 +257,7 @@ export default function AdminFeatures({ actionData, loaderData }: Route.Componen
                                   e.preventDefault();
                                 }
                               }}
+                              className="w-full sm:w-auto"
                             >
                               Deactivate
                             </Button>

@@ -2,28 +2,83 @@ import compression from "compression";
 import express from "express";
 import morgan from "morgan";
 import session from "express-session";
+import { createClient } from "redis";
+import { RedisStore } from "connect-redis";
 
 // Short-circuit the type-checking of the built output.
 const BUILD_PATH = "./build/server/index.js";
 const DEVELOPMENT = process.env.NODE_ENV === "development";
 const PORT = Number.parseInt(process.env.PORT || "3000");
 
+// Validate required environment variables
+if (!process.env.SESSION_SECRET) {
+  throw new Error("SESSION_SECRET is not set");
+}
+if (!process.env.REDIS_URL) {
+  throw new Error("REDIS_URL is not set");
+}
+
 const app = express();
 
 app.use(compression());
 app.disable("x-powered-by");
 
+const redisClient = createClient({
+  url: process.env.REDIS_URL,
+  socket: {
+    reconnectStrategy: (retries) => {
+      if (retries > 10) {
+        console.error("Redis connection failed after 10 retries");
+        return new Error("Redis connection failed");
+      }
+      return retries * 100;
+    }
+  }
+});
+
+redisClient.on("error", (err) => console.error("Redis Client Error:", err));
+redisClient.on("connect", () => console.log("Redis Client Connected"));
+
+await redisClient.connect();
+
+const redisStore = new RedisStore({
+  client: redisClient,
+  prefix: "sess:",
+});
+
 app.use(session({
-  secret: process.env.SESSION_SECRET || (() => { throw new Error("SESSION_SECRET is not set") })(),
+  store: redisStore,
+  secret: process.env.SESSION_SECRET,
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   cookie: {
     secure: process.env.NODE_ENV === "production",
     httpOnly: true,
-    maxAge: 1000 * 60 * 60 * 24,
     sameSite: "strict"
   }
 }));
+
+// Handle session errors gracefully - regenerate corrupted sessions
+app.use((req, res, next) => {
+  if (!req.session) {
+    return next(new Error("Session not available"));
+  }
+
+  // If session exists but is corrupted, regenerate it
+  req.session.reload((err) => {
+    if (err) {
+      console.warn("Session reload failed, regenerating:", err.message);
+      req.session.regenerate((regenerateErr) => {
+        if (regenerateErr) {
+          console.error("Session regeneration failed:", regenerateErr);
+        }
+        next();
+      });
+    } else {
+      next();
+    }
+  });
+});
 
 if (DEVELOPMENT) {
   console.log("Starting development server");

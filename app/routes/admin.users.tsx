@@ -303,18 +303,15 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
                   return (
                     <div key={user.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
                       <div className="flex justify-between items-center">
-                        <div className="flex-1">
+                        <div className="flex-1" title={user.email || undefined}>
                           <div className="flex items-center gap-2">
                             <h3 className="font-medium">{user.username}</h3>
                             {user.email && (
-                              <span
-                                title={user.email}
-                                className="inline-flex items-center"
-                              >
+                              <span className="inline-flex items-center">
                                 {user.allowNotifications ? (
-                                  <span className="w-2 h-2 rounded-full bg-green-500" title={user.email}></span>
+                                  <span className="w-2 h-2 rounded-full bg-green-500"></span>
                                 ) : (
-                                  <span className="w-2 h-2 rounded-full border border-gray-400 dark:border-gray-500" title={user.email}></span>
+                                  <span className="w-2 h-2 rounded-full border border-gray-400 dark:border-gray-500"></span>
                                 )}
                               </span>
                             )}
@@ -328,7 +325,7 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
                             </p>
                           )}
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                           {!isDeleted && showPasswordResetFor[user.id] ? (
                             // Show password reset form instead of buttons
                             <div className="w-full">
@@ -376,9 +373,9 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
                               }`}>
                                 {isDeleted ? "Deleted" : user.isAdmin ? "Admin" : "User"}
                               </span>
-                              <div className="flex flex-col sm:flex-row gap-2">
+                              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                                 {isDeleted ? (
-                                  <Form method="post" className="inline">
+                                  <Form method="post" className="w-full sm:w-auto">
                                     <input type="hidden" name="csrfToken" value={rootData?.csrfToken || ""} />
                                     <input type="hidden" name="action" value="restore" />
                                     <input type="hidden" name="userId" value={user.id} />
@@ -386,13 +383,14 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
                                       type="submit"
                                       variant="success"
                                       disabled={isSubmitting}
+                                      className="w-full sm:w-auto"
                                     >
                                       Restore
                                     </Button>
                                   </Form>
                                 ) : (
                                   <>
-                                    <Form method="post" className="inline">
+                                    <Form method="post" className="w-full sm:w-auto">
                                       <input type="hidden" name="csrfToken" value={rootData?.csrfToken || ""} />
                                       <input type="hidden" name="action" value="toggle-admin" />
                                       <input type="hidden" name="userId" value={user.id} />
@@ -400,6 +398,7 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
                                         type="submit"
                                         variant={user.isAdmin ? "warning" : "info"}
                                         disabled={isSubmitting || (user.isAdmin && isLastAdmin)}
+                                        className="w-full sm:w-auto"
                                       >
                                         {user.isAdmin ? "Remove Admin" : "Make Admin"}
                                       </Button>
@@ -408,11 +407,12 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
                                     <Button
                                       variant="warning"
                                       onClick={() => setShowPasswordResetFor(prev => ({ ...prev, [user.id]: true }))}
+                                      className="w-full sm:w-auto"
                                     >
                                       Reset Password
                                     </Button>
 
-                                    <Form method="post" className="inline">
+                                    <Form method="post" className="w-full sm:w-auto">
                                       <input type="hidden" name="csrfToken" value={rootData?.csrfToken || ""} />
                                       <input type="hidden" name="action" value="delete" />
                                       <input type="hidden" name="userId" value={user.id} />
@@ -425,6 +425,7 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
                                             e.preventDefault();
                                           }
                                         }}
+                                        className="w-full sm:w-auto"
                                       >
                                         Delete
                                       </Button>

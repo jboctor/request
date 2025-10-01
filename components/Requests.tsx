@@ -110,7 +110,7 @@ export function Requests({
                   </p>
                 )}
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                 {status === "pending" && (showNotesFor[request.id] === 'complete' || (showNotesFor[request.id] === 'delete' && isAdmin)) ? (
                   // Show notes form instead of status pill and buttons
                   <div className="w-full">
@@ -193,12 +193,13 @@ export function Requests({
                       {status === "pending" ? "Pending" : status === "completed" ? "Completed" : "Deleted"}
                     </span>
                     {status === "pending" && (
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                         {isAdmin && (
                           <Button
                             type="button"
                             variant="success"
                             onClick={() => setShowNotesFor(prev => ({ ...prev, [request.id]: 'complete' }))}
+                            className="w-full sm:w-auto"
                           >
                             Complete
                           </Button>
@@ -208,11 +209,12 @@ export function Requests({
                             type="button"
                             variant="alert"
                             onClick={() => setShowNotesFor(prev => ({ ...prev, [request.id]: 'delete' }))}
+                            className="w-full sm:w-auto"
                           >
                             Delete
                           </Button>
                         ) : (
-                          <Form method="post" className="inline">
+                          <Form method="post" className="w-full sm:w-auto">
                             <input type="hidden" name="csrfToken" value={csrfToken} />
                             <input type="hidden" name="requestId" value={request.id} />
                             <input type="hidden" name="action" value="delete" />
@@ -225,6 +227,7 @@ export function Requests({
                                   e.preventDefault();
                                 }
                               }}
+                              className="w-full sm:w-auto"
                             >
                               Delete
                             </Button>
