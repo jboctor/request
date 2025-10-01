@@ -20,6 +20,7 @@ if (!process.env.REDIS_URL) {
 
 const app = express();
 
+app.set('trust proxy', 1);
 app.use(compression());
 app.disable("x-powered-by");
 
@@ -57,28 +58,6 @@ app.use(session({
     sameSite: "strict"
   }
 }));
-
-// Handle session errors gracefully - regenerate corrupted sessions
-app.use((req, res, next) => {
-  if (!req.session) {
-    return next(new Error("Session not available"));
-  }
-
-  // If session exists but is corrupted, regenerate it
-  req.session.reload((err) => {
-    if (err) {
-      console.warn("Session reload failed, regenerating:", err.message);
-      req.session.regenerate((regenerateErr) => {
-        if (regenerateErr) {
-          console.error("Session regeneration failed:", regenerateErr);
-        }
-        next();
-      });
-    } else {
-      next();
-    }
-  });
-});
 
 if (DEVELOPMENT) {
   console.log("Starting development server");
