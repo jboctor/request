@@ -14,7 +14,7 @@ import { CSRFProtection } from "~/utils/csrf";
 export async function loader({ context }: Route.LoaderArgs) {
   // Ensure CSRF token is available globally
   const csrfToken = CSRFProtection.getToken(context.session);
-  return { csrfToken };
+  return { csrfToken, adminName: process.env.ADMIN_NAME };
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
@@ -42,18 +42,7 @@ export async function action({ request, context }: Route.ActionArgs) {
   return null;
 }
 
-export const links: Route.LinksFunction = () => [
-  { rel: "preconnect", href: "https://fonts.googleapis.com" },
-  {
-    rel: "preconnect",
-    href: "https://fonts.gstatic.com",
-    crossOrigin: "anonymous",
-  },
-  {
-    rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
-  },
-];
+export const links: Route.LinksFunction = () => [];
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -61,6 +50,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta
+          httpEquiv="Content-Security-Policy"
+          content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self' ws://localhost:*;"
+        />
         <Meta />
         <Links />
       </head>

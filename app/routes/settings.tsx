@@ -5,10 +5,13 @@ import { redirect } from "react-router";
 import { Button } from "~/components/Button";
 import { SectionWrapper } from "~/components/SectionWrapper";
 import { UserService } from "~/services/userService";
+import { EmailService } from "~/services/emailService";
 
-export function meta({}: Route.MetaArgs) {
+export function meta({ matches }: Route.MetaArgs) {
+  const rootData = matches[0].loaderData as { adminName?: string };
+  const adminName = rootData?.adminName;
   return [
-    { title: "Settings - John Boctor Services" },
+    { title: `Settings - ${adminName} Services` },
     { name: "description", content: "Manage your account settings" },
   ];
 }
@@ -53,8 +56,9 @@ export async function action({ request, context }: Route.ActionArgs) {
     }
 
     try {
-      await UserService.setUserEmail(user.id, email, allowNotifications);
-      return { success: "Email updated successfully!" };
+      const verificationToken = await UserService.setUserEmail(user.id, email, allowNotifications);
+      await EmailService.sendVerificationEmail(email.trim(), verificationToken);
+      return { success: "Email updated! Check your inbox for a verification link." };
     } catch (error) {
       console.error("Error updating email:", error);
       return { error: "Failed to update email" };
@@ -78,6 +82,17 @@ export async function action({ request, context }: Route.ActionArgs) {
     } catch (error) {
       console.error("Error removing email:", error);
       return { error: "Failed to remove email" };
+    }
+  }
+
+  if (action === "resendVerification") {
+    try {
+      const { email, token } = await UserService.generateNewVerificationToken(user.id);
+      await EmailService.sendVerificationEmail(email, token);
+      return { success: "Verification email sent! Check your inbox." };
+    } catch (error) {
+      console.error("Error resending verification email:", error);
+      return { error: error instanceof Error ? error.message : "Failed to resend verification email" };
     }
   }
 
@@ -226,25 +241,51 @@ export default function Settings({ actionData, loaderData }: Route.ComponentProp
               {loaderData?.email ? (
                 <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                   <div className="flex justify-between items-start mb-2">
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Current email: <strong>{loaderData.email.email}</strong>
-                    </p>
-                    <Form method="post" className="inline">
-                      <input type="hidden" name="csrfToken" value={rootData?.csrfToken || ""} />
-                      <input type="hidden" name="action" value="removeEmail" />
-                      <Button
-                        type="submit"
-                        variant="alert"
-                        className="text-xs px-2 py-1"
-                        onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                          if (!confirm("Are you sure you want to remove your email address?")) {
-                            e.preventDefault();
-                          }
-                        }}
-                      >
-                        Remove
-                      </Button>
-                    </Form>
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Current email: <strong>{loaderData.email.email}</strong>
+                      </p>
+                      {loaderData.email.isVerified ? (
+                        <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                          ✓ Verified
+                        </p>
+                      ) : (
+                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                          ⚠️ Not verified - Check your email for verification link
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      {!loaderData.email.isVerified && (
+                        <Form method="post" className="inline">
+                          <input type="hidden" name="csrfToken" value={rootData?.csrfToken || ""} />
+                          <input type="hidden" name="action" value="resendVerification" />
+                          <Button
+                            type="submit"
+                            variant="warning"
+                            className="text-xs px-2 py-1"
+                          >
+                            Resend
+                          </Button>
+                        </Form>
+                      )}
+                      <Form method="post" className="inline">
+                        <input type="hidden" name="csrfToken" value={rootData?.csrfToken || ""} />
+                        <input type="hidden" name="action" value="removeEmail" />
+                        <Button
+                          type="submit"
+                          variant="alert"
+                          className="text-xs px-2 py-1"
+                          onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                            if (!confirm("Are you sure you want to remove your email address?")) {
+                              e.preventDefault();
+                            }
+                          }}
+                        >
+                          Remove
+                        </Button>
+                      </Form>
+                    </div>
                   </div>
                   <Form method="post" className="flex items-center gap-2">
                     <input type="hidden" name="csrfToken" value={rootData?.csrfToken || ""} />

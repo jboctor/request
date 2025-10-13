@@ -5,5 +5,6 @@ declare module "express-session" {
     user?: { id: number; username: string; isAdmin: boolean };
     lastValidated?: number;
     csrfToken?: string;
+    loginAttempts?: number;
   }
 }

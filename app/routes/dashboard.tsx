@@ -10,10 +10,12 @@ import { Requests } from "~/components/Requests";
 import { FilteredItemsSection } from "~/components/FilteredItemsSection";
 import { SectionWrapper } from "~/components/SectionWrapper";
 
-export function meta({}: Route.MetaArgs) {
+export function meta({ matches }: Route.MetaArgs) {
+  const rootData = matches[0].loaderData as { adminName?: string };
+  const adminName = rootData?.adminName;
   return [
-    { title: "John Boctor Services" },
-    { name: "description", content: "Welcome to John Boctor Services!" },
+    { title: `${adminName} Services` },
+    { name: "description", content: `Welcome to ${adminName} Services!` },
   ];
 }
 
@@ -83,7 +85,8 @@ export default function Dashboard({ actionData, loaderData }: Route.ComponentPro
   const [showDeleted, setShowDeleted] = useState(false);
   const navigation = useNavigation();
   const fetcher = useFetcher<typeof loader>();
-  const rootData = useRouteLoaderData("root") as { csrfToken?: string };
+  const rootData = useRouteLoaderData("root") as { csrfToken?: string; adminName?: string };
+  const adminName = rootData?.adminName;
 
   useEffect(() => {
     const savedTab = localStorage.getItem("dashboard-active-tab");
@@ -121,7 +124,7 @@ export default function Dashboard({ actionData, loaderData }: Route.ComponentPro
         <header className="flex flex-col items-center gap-9">
           <h1 className="sr-only">Hello</h1>
           <div className="w-[900px] max-w-[100vw] p-4">
-            <h1 className="block w-full text-center text-2xl">Welcome to John Boctor Services</h1>
+            <h1 className="block w-full text-center text-2xl">Welcome to {adminName} Services</h1>
           </div>
         </header>
         <div className="max-w-[900px] w-full space-y-6 px-4">

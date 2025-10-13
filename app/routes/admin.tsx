@@ -7,9 +7,11 @@ import { Button } from "~/components/Button";
 import { Requests } from "~/components/Requests";
 import { FilteredItemsSection } from "~/components/FilteredItemsSection";
 
-export function meta({}: Route.MetaArgs) {
+export function meta({ matches }: Route.MetaArgs) {
+  const rootData = matches[0].loaderData as { adminName?: string };
+  const adminName = rootData?.adminName;
   return [
-    { title: "Admin Panel - John Boctor Services" },
+    { title: `Admin Panel - ${adminName} Services` },
     { name: "description", content: "Admin panel for managing requests" },
   ];
 }

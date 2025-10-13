@@ -2,6 +2,7 @@ import { database } from "~/database/context";
 import * as schema from "~/database/schema";
 import { PasswordManager } from "~/utils/password";
 import { eq } from "drizzle-orm";
+import { randomBytes } from "crypto";
 
 export interface CreateUserData {
   username: string;
@@ -183,16 +184,20 @@ export class UserService {
       .where(eq(schema.user.id, userId));
   }
 
-  static async getUserEmail(userId: number): Promise<{ email: string; allowNotifications: boolean } | null> {
+  static async getUserEmail(userId: number): Promise<{ email: string; allowNotifications: boolean; isVerified: boolean } | null> {
     const userEmail = await this.db.query.userEmail.findFirst({
       where: eq(schema.userEmail.userId, userId),
-      columns: { email: true, allowNotifications: true }
+      columns: { email: true, allowNotifications: true, isVerified: true }
     });
 
     return userEmail || null;
   }
 
-  static async setUserEmail(userId: number, email: string, allowNotifications?: boolean): Promise<void> {
+  static async setUserEmail(userId: number, email: string, allowNotifications?: boolean): Promise<string> {
+    const trimmedEmail = email.trim();
+    const verificationToken = randomBytes(32).toString('hex');
+    const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
     const existingEmail = await this.db.query.userEmail.findFirst({
       where: eq(schema.userEmail.userId, userId),
       columns: { id: true }
@@ -201,7 +206,10 @@ export class UserService {
     if (existingEmail) {
       await this.db.update(schema.userEmail)
         .set({
-          email: email.trim(),
+          email: trimmedEmail,
+          isVerified: false,
+          verificationToken,
+          verificationTokenExpiry,
           dateUpdated: new Date()
         })
         .where(eq(schema.userEmail.userId, userId));
@@ -209,10 +217,42 @@ export class UserService {
       // Insert new email
       await this.db.insert(schema.userEmail).values({
         userId,
-        email: email.trim(),
-        allowNotifications: allowNotifications ?? false
+        email: trimmedEmail,
+        allowNotifications: allowNotifications ?? false,
+        isVerified: false,
+        verificationToken,
+        verificationTokenExpiry
       });
     }
+
+    return verificationToken;
+  }
+
+  static async verifyEmail(token: string): Promise<boolean> {
+    const userEmail = await this.db.query.userEmail.findFirst({
+      where: eq(schema.userEmail.verificationToken, token),
+      columns: { id: true, userId: true, verificationTokenExpiry: true }
+    });
+
+    if (!userEmail) {
+      return false;
+    }
+
+    // Check if token is expired
+    if (userEmail.verificationTokenExpiry && new Date() > userEmail.verificationTokenExpiry) {
+      return false;
+    }
+
+    await this.db.update(schema.userEmail)
+      .set({
+        isVerified: true,
+        verificationToken: null,
+        verificationTokenExpiry: null,
+        dateUpdated: new Date()
+      })
+      .where(eq(schema.userEmail.id, userEmail.id));
+
+    return true;
   }
 
   static async toggleNotifications(userId: number): Promise<boolean> {
@@ -236,5 +276,34 @@ export class UserService {
   static async removeUserEmail(userId: number): Promise<void> {
     await this.db.delete(schema.userEmail)
       .where(eq(schema.userEmail.userId, userId));
+  }
+
+  static async generateNewVerificationToken(userId: number): Promise<{ email: string; token: string }> {
+    const userEmail = await this.db.query.userEmail.findFirst({
+      where: eq(schema.userEmail.userId, userId),
+      columns: { email: true, isVerified: true }
+    });
+
+    if (!userEmail) {
+      throw new Error("No email address found");
+    }
+
+    if (userEmail.isVerified) {
+      throw new Error("Email is already verified");
+    }
+
+    // Generate new verification token
+    const verificationToken = randomBytes(32).toString('hex');
+    const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    await this.db.update(schema.userEmail)
+      .set({
+        verificationToken,
+        verificationTokenExpiry,
+        dateUpdated: new Date()
+      })
+      .where(eq(schema.userEmail.userId, userId));
+
+    return { email: userEmail.email, token: verificationToken };
   }
 }

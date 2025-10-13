@@ -3,14 +3,16 @@ import { Button } from "~/components/Button";
 import { UserService } from "~/services/userService";
 
 import type { Route } from "./+types/login";
-import { Form, useNavigation, useNavigate, useRouteLoaderData } from "react-router";
+import { Form, Link, useNavigation, useNavigate, useRouteLoaderData } from "react-router";
 import { redirect } from "react-router";
 import { useEffect } from "react";
 
-export function meta({}: Route.MetaArgs) {
+export function meta({ matches }: Route.MetaArgs) {
+  const rootData = matches[0].loaderData as { adminName?: string };
+  const adminName = rootData?.adminName;
   return [
-    { title: "John Boctor Services" },
-    { name: "description", content: "Welcome to John Boctor Services!" },
+    { title: `${adminName} Services` },
+    { name: "description", content: `Welcome to ${adminName} Services!` },
   ];
 }
 
@@ -24,6 +26,14 @@ export async function loader({ context }: Route.LoaderArgs) {
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
+  if (!context.session.loginAttempts) {
+    context.session.loginAttempts = 0;
+  }
+
+  if (context.session.loginAttempts >= 5) {
+    return { error: `Too many failed login attempts. Please contact ${process.env.ADMIN_NAME} to reset your access.` };
+  }
+
   const formData = await request.formData();
 
   let username = formData.get("username");
@@ -45,16 +55,36 @@ export async function action({ request, context }: Route.ActionArgs) {
     const user = await UserService.getUserByUsername(username);
 
     if (!user) {
+      context.session.loginAttempts++;
+
+      if (context.session.loginAttempts >= 3) {
+        return { error: `Hey dude, seems like you may have forgotten your password. Why don't you just text ${process.env.ADMIN_NAME} to reset it for you.` };
+      }
+
       return { error: "Invalid username or password" };
     }
 
     if (user.dateDeleted) {
-      return { error: "Account has been deactivated" };
+      context.session.loginAttempts++;
+
+      if (context.session.loginAttempts >= 3) {
+        return { error: `Hey dude, seems like you may have forgotten your password. Why don't you just text ${process.env.ADMIN_NAME} to reset it for you.` };
+      }
+
+      return { error: "Invalid username or password" };
     }
 
     await AuthService.login(user, password, context.session);
+
+    context.session.loginAttempts = 0;
   } catch (error) {
     console.error("Login error:", error);
+    context.session.loginAttempts++;
+
+    if (context.session.loginAttempts >= 3) {
+      return { error: "Hey dude, seems like you may have forgotten your password. Why don't you just text John to reset it for you." };
+    }
+
     return { error: "Invalid username or password" };
   }
 
@@ -64,7 +94,8 @@ export async function action({ request, context }: Route.ActionArgs) {
 export default function Home({ actionData, loaderData }: Route.ComponentProps) {
   const navigation = useNavigation();
   const navigate = useNavigate();
-  const rootData = useRouteLoaderData("root") as { csrfToken?: string };
+  const rootData = useRouteLoaderData("root") as { csrfToken?: string; adminName?: string };
+  const adminName = rootData?.adminName;
 
   useEffect(() => {
     if (loaderData?.isAuthenticated && typeof window !== "undefined") {
@@ -91,7 +122,7 @@ export default function Home({ actionData, loaderData }: Route.ComponentProps) {
         <header className="flex flex-col items-center gap-9">
           <h1 className="sr-only">Please Sign In</h1>
           <div className="w-[500px] max-w-[100vw] p-4">
-            <h1 className="block w-full text-center text-2xl">Welcome to John Boctor Services</h1>
+            <h1 className="block w-full text-center text-2xl">Welcome to {adminName} Services</h1>
           </div>
         </header>
         <div className="max-w-[300px] w-full space-y-6 px-4">
@@ -137,6 +168,11 @@ export default function Home({ actionData, loaderData }: Route.ComponentProps) {
                 {navigation.state === "submitting" ? "Signing In..." : "Sign In"}
               </Button>
             </Form>
+            <div className="text-center mt-4">
+              <Link to="/contact" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                Need help? Contact {adminName}
+              </Link>
+            </div>
           </section>
         </div>
       </div>

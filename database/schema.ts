@@ -44,6 +44,9 @@ export const userEmail = pgTable("user_email", {
   userId: integer().notNull().references(() => user.id).unique(),
   email: varchar({ length: 255 }).notNull(),
   allowNotifications: boolean().notNull().default(false),
+  isVerified: boolean().notNull().default(false),
+  verificationToken: varchar({ length: 64 }),
+  verificationTokenExpiry: timestamp(),
   dateCreated: timestamp().notNull().defaultNow(),
   dateUpdated: timestamp(),
 });

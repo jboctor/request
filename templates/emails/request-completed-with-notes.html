@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body { font-family: Arial, sans-serif; line-height: 1.6; color: #1f2937; }
+      .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+      .header { background-color: #dcfce7; color: #166534; padding: 16px 20px; border-bottom: 2px solid #86efac; border-radius: 8px 8px 0 0; }
+      .header h1 { margin: 0; font-size: 20px; font-weight: 600; }
+      .content { background-color: #f3f4f6; padding: 30px; border-radius: 0 0 8px 8px; }
+      .detail-box { background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0; border-left: 4px solid #16a34a; }
+      .label { font-weight: bold; color: #6b7280; }
+      .value { color: #111827; margin-top: 5px; }
+      .note-box { background-color: #f0fdf4; border: 1px solid #86efac; padding: 15px; border-radius: 6px; margin-top: 15px; }
+      .footer { color: #6b7280; font-size: 14px; margin-top: 20px; }
+
+      @media (prefers-color-scheme: dark) {
+        body { color: #f9fafb; }
+        .header { background-color: #14532d !important; color: #dcfce7 !important; border-bottom-color: #166534 !important; }
+        .content { background-color: #1f2937 !important; }
+        .detail-box { background-color: #374151 !important; border-left-color: #22c55e !important; }
+        .value { color: #f9fafb !important; }
+        .label { color: #d1d5db !important; }
+        .note-box { background-color: #14532d !important; border-color: #166534 !important; }
+        .footer { color: #d1d5db !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container" style="max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div class="header" style="background-color: #dcfce7; color: #166534; padding: 16px 20px; border-bottom: 2px solid #86efac; border-radius: 8px 8px 0 0;">
+        <h1 style="margin: 0; font-size: 20px; font-weight: 600;">✓ Request Completed</h1>
+      </div>
+      <div class="content" style="background-color: #f3f4f6; padding: 30px; border-radius: 0 0 8px 8px;">
+        <p>Good news! Your <strong>{{MEDIA_TYPE}}</strong> request has been completed and is ready for you.</p>
+
+        <div class="detail-box" style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0; border-left: 4px solid #16a34a;">
+          <div class="value" style="color: #111827;">{{TITLE}}</div>
+        </div>
+
+        <div class="note-box" style="background-color: #f0fdf4; border: 1px solid #86efac; padding: 15px; border-radius: 6px; margin-top: 15px;">
+          <div class="label" style="font-weight: bold; color: #6b7280;">Note from admin</div>
+          <div class="value" style="color: #111827; margin-top: 5px;">{{NOTES}}</div>
+        </div>
+
+        <p class="footer" style="color: #6b7280; font-size: 14px; margin-top: 20px;">Thank you for using John Boctor Services!</p>
+      </div>
+    </div>
+  </body>
+</html>

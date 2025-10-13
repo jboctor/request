@@ -3,6 +3,7 @@ import { Outlet, Form, redirect, Link, useLocation } from "react-router";
 import { Button } from "~/components/Button";
 import { Navigation } from "~/components/Navigation";
 import { database } from "~/database/context";
+import { UserService } from "~/services/userService";
 
 function checkAuth(args?: Route.LoaderArgs) {
   const user = args?.context?.session?.user;
@@ -55,25 +56,41 @@ export async function loader(args: Route.LoaderArgs) {
           else resolve();
         });
       });
-
-      return { user: args.context.session.user };
     } catch (error) {
       console.error("Error verifying user session:", error);
       return redirect("/");
     }
   }
 
-  return { user: sessionUser };
+  // Check if user has unverified email
+  try {
+    const email = await UserService.getUserEmail(sessionUser.id);
+    const hasUnverifiedEmail = email && !email.isVerified;
+    return { user: sessionUser, hasUnverifiedEmail };
+  } catch (error) {
+    console.error("Error checking email verification:", error);
+    return { user: sessionUser, hasUnverifiedEmail: false };
+  }
 }
 
 export default function AuthLayout({
   loaderData
 }: Route.ComponentProps) {
-  const { user } = loaderData;
+  const { user, hasUnverifiedEmail } = loaderData;
   const location = useLocation();
 
   return (
     <div>
+      {/* Unverified email banner */}
+      {hasUnverifiedEmail && (
+        <div className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 px-4 py-3">
+          <div className="flex items-center justify-between max-w-7xl mx-auto">
+            <p className="text-sm text-amber-800 dark:text-amber-200">
+              ⚠️ Your email address is not verified. <Link to="/settings" className="underline hover:no-underline font-medium">Verify it now</Link> to receive notifications.
+            </p>
+          </div>
+        </div>
+      )}
       {/* Desktop: Single row layout (sticky entire header) */}
       <header className="hidden md:block sticky top-0 bg-green-100 dark:bg-green-900 p-4 border-b border-green-300 dark:border-green-700">
         <div className="flex justify-between items-center">
