@@ -24,7 +24,10 @@ function escapeHtmlWithLineBreaks(text: string): string {
 }
 
 async function loadEmailTemplate(templateName: string): Promise<string> {
-  const templatePath = join(process.cwd(), 'templates/emails', templateName);
+  // In production Docker: /app/templates/emails/templateName
+  // In development: /home/user/project/templates/emails/templateName
+  // process.cwd() returns the working directory where the app is started
+  const templatePath = join(process.cwd(), 'templates', 'emails', templateName);
   return await readFile(templatePath, 'utf-8');
 }
 

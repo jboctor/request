@@ -21,5 +21,6 @@ COPY --from=build-env /app/build /app/build
 COPY ./drizzle.config.ts /app/
 COPY ./database /app/database
 COPY ./drizzle /app/drizzle
+COPY ./templates /app/templates
 WORKDIR /app
 CMD ["npm", "run", "start"]
