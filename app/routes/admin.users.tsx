@@ -192,7 +192,7 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
         <header className="flex flex-col items-center gap-9">
           <h1 className="sr-only">User Management</h1>
           <div className="w-[900px] max-w-[100vw] p-4">
-            <h1 className="block w-full text-center text-2xl">User Management</h1>
+            <h1 className="block w-full text-center text-3xl font-semibold tracking-tight">User Management</h1>
           </div>
         </header>
 
@@ -220,7 +220,7 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
                     name="username"
                     required
                     minLength={3}
-                    className="w-full p-2 border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600"
+                    className="w-full h-10 px-4 rounded-lg border border-gray-200 bg-gray-50/50 dark:bg-gray-800/80 dark:border-gray-600 focus:ring-1 focus:ring-green-500/40 focus:border-green-400"
                     placeholder="Enter username"
                   />
                 </div>
@@ -231,7 +231,7 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
                     name="password"
                     required
                     minLength={16}
-                    className="w-full p-2 border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600"
+                    className="w-full h-10 px-4 rounded-lg border border-gray-200 bg-gray-50/50 dark:bg-gray-800/80 dark:border-gray-600 focus:ring-1 focus:ring-green-500/40 focus:border-green-400"
                     placeholder="Enter password"
                   />
                 </div>
@@ -301,7 +301,7 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
                   const isLastAdmin = user.isAdmin && !isDeleted && loaderData?.adminCount === 1;
 
                   return (
-                    <div key={user.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <div key={user.id} className="p-4 border border-gray-200/60 dark:border-gray-700/40 rounded-card-alt bg-white/50 dark:bg-gray-800/30 hover:shadow-md transition-shadow duration-200">
                       <div className="flex justify-between items-center">
                         <div className="flex-1" title={user.email || undefined}>
                           <div className="flex items-center gap-2">
@@ -337,7 +337,7 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
                                   type="password"
                                   name="newPassword"
                                   placeholder="Enter new password..."
-                                  className="text-xs p-2 border border-gray-300 dark:border-gray-600 rounded dark:bg-gray-800 dark:text-gray-200"
+                                  className="text-xs h-10 px-4 rounded-lg border border-gray-200 bg-gray-50/50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 focus:ring-1 focus:ring-green-500/40 focus:border-green-400"
                                   required
                                   minLength={16}
                                   autoFocus
@@ -364,12 +364,12 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
                             </div>
                           ) : (
                             <>
-                              <span className={`text-xs px-2 py-1 rounded-full ${
+                              <span className={`text-xs px-2 py-1 rounded-full border ${
                                 isDeleted
-                                  ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                                  ? "bg-red-100 text-red-800 border-red-300 dark:bg-red-900 dark:text-red-200 dark:border-red-700"
                                   : user.isAdmin
-                                    ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                                    : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
+                                    ? "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700"
+                                    : "bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-900 dark:text-gray-200 dark:border-gray-700"
                               }`}>
                                 {isDeleted ? "Deleted" : user.isAdmin ? "Admin" : "User"}
                               </span>

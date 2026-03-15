@@ -47,7 +47,19 @@ export default function Admin({ actionData, loaderData }: Route.ComponentProps) 
       }
     }, 30000);
 
-    return () => clearInterval(interval);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetcher.load("/admin");
+        alert("Fulfillment data refreshed");
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [fetcher]);
 
   // Use fetcher data if available, fallback to loaderData
@@ -59,7 +71,7 @@ export default function Admin({ actionData, loaderData }: Route.ComponentProps) 
         <header className="flex flex-col items-center gap-9">
           <h1 className="sr-only">Request Fulfillment</h1>
           <div className="w-[900px] max-w-[100vw] p-4">
-            <h1 className="block w-full text-center text-2xl">Request Fulfillment</h1>
+            <h1 className="block w-full text-center text-3xl font-semibold tracking-tight">Request Fulfillment</h1>
           </div>
         </header>
         <div className="max-w-[900px] w-full space-y-6 px-4">

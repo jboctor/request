@@ -141,10 +141,10 @@ export default function Settings({ actionData, loaderData }: Route.ComponentProp
             <button
               onClick={() => setActiveSection("email")}
               id="email-settings-button"
-              className={`px-4 py-2 text-sm font-medium border-b-2 ${
+              className={`px-4 py-2 text-sm font-medium border-b-2 rounded-t-lg ${
                 activeSection === "email"
-                  ? "border-blue-500 text-blue-600 dark:text-blue-400"
-                  : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  ? "border-green-500 text-green-600 dark:text-green-400 bg-green-50/50 dark:bg-green-400/10"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-white/5"
               }`}
             >
               Email Address
@@ -152,10 +152,10 @@ export default function Settings({ actionData, loaderData }: Route.ComponentProp
             <button
               onClick={() => setActiveSection("password")}
               id="password-settings-button"
-              className={`px-4 py-2 text-sm font-medium border-b-2 ${
+              className={`px-4 py-2 text-sm font-medium border-b-2 rounded-t-lg ${
                 activeSection === "password"
-                  ? "border-blue-500 text-blue-600 dark:text-blue-400"
-                  : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  ? "border-green-500 text-green-600 dark:text-green-400 bg-green-50/50 dark:bg-green-400/10"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-white/5"
               }`}
             >
               Change Password
@@ -163,12 +163,12 @@ export default function Settings({ actionData, loaderData }: Route.ComponentProp
           </div>
 
           {actionData?.error && (
-            <div className="text-red-600 text-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+            <div className="text-red-600 text-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800 border-l-4 border-l-red-500">
               {actionData.error}
             </div>
           )}
           {actionData?.success && (
-            <div className="text-green-600 text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+            <div className="text-green-600 text-center p-3 bg-green-50 dark:bg-green-400/10 rounded-lg border border-green-200 dark:border-green-800 border-l-4 border-l-green-500">
               {actionData.success}
             </div>
           )}
@@ -190,7 +190,7 @@ export default function Settings({ actionData, loaderData }: Route.ComponentProp
                     name="currentPassword"
                     id="currentPassword"
                     required
-                    className="w-full dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:focus:ring-blue-500 h-10 px-3 rounded-lg border border-gray-200 focus:ring-1 focus:ring-blue-500"
+                    className="w-full dark:bg-gray-800/80 dark:text-gray-200 dark:border-gray-600 h-10 px-4 rounded-lg border border-gray-200 bg-gray-50/50 focus:ring-1 focus:ring-green-500/40 focus:border-green-400"
                   />
                 </div>
 
@@ -204,7 +204,7 @@ export default function Settings({ actionData, loaderData }: Route.ComponentProp
                     id="newPassword"
                     required
                     minLength={16}
-                    className="w-full dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:focus:ring-blue-500 h-10 px-3 rounded-lg border border-gray-200 focus:ring-1 focus:ring-blue-500"
+                    className="w-full dark:bg-gray-800/80 dark:text-gray-200 dark:border-gray-600 h-10 px-4 rounded-lg border border-gray-200 bg-gray-50/50 focus:ring-1 focus:ring-green-500/40 focus:border-green-400"
                   />
                 </div>
 
@@ -218,7 +218,7 @@ export default function Settings({ actionData, loaderData }: Route.ComponentProp
                     id="confirmPassword"
                     required
                     minLength={16}
-                    className="w-full dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:focus:ring-blue-500 h-10 px-3 rounded-lg border border-gray-200 focus:ring-1 focus:ring-blue-500"
+                    className="w-full dark:bg-gray-800/80 dark:text-gray-200 dark:border-gray-600 h-10 px-4 rounded-lg border border-gray-200 bg-gray-50/50 focus:ring-1 focus:ring-green-500/40 focus:border-green-400"
                   />
                 </div>
 
@@ -324,7 +324,7 @@ export default function Settings({ actionData, loaderData }: Route.ComponentProp
                     maxLength={255}
                     placeholder="your.email@example.com"
                     defaultValue={loaderData?.email?.email || ""}
-                    className="w-full dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:focus:ring-blue-500 h-10 px-3 rounded-lg border border-gray-200 focus:ring-1 focus:ring-blue-500"
+                    className="w-full dark:bg-gray-800/80 dark:text-gray-200 dark:border-gray-600 h-10 px-4 rounded-lg border border-gray-200 bg-gray-50/50 focus:ring-1 focus:ring-green-500/40 focus:border-green-400"
                   />
                 </div>
 

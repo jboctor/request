@@ -222,7 +222,7 @@ export default function FeatureLayout({ loaderData }: Route.ComponentProps) {
 
           {/* Feature description popup */}
           <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-            <div className="feature-popup bg-white/95 dark:bg-gray-950/95 backdrop-blur-sm rounded-lg shadow-2xl max-w-md w-full border border-gray-200 dark:border-gray-700">
+            <div className="feature-popup bg-white/95 dark:bg-gray-900/95 backdrop-blur-md rounded-card shadow-2xl shadow-green-900/10 max-w-md w-full border border-gray-200 dark:border-gray-700">
               <div className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -247,7 +247,7 @@ export default function FeatureLayout({ loaderData }: Route.ComponentProps) {
                 <div className="flex justify-end">
                   <button
                     onClick={() => handleDismissFeature(currentFeature.id)}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium cursor-pointer"
+                    className="px-4 py-2 bg-gradient-to-r from-green-600 to-green-500 hover:shadow-md hover:shadow-green-500/25 text-white rounded-lg transition-all duration-200 text-sm font-medium cursor-pointer active:scale-95"
                   >
                     Got it!
                   </button>

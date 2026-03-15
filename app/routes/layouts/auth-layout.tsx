@@ -83,7 +83,7 @@ export default function AuthLayout({
     <div>
       {/* Unverified email banner */}
       {hasUnverifiedEmail && (
-        <div className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 px-4 py-3">
+        <div className="bg-gradient-to-r from-amber-50 via-amber-50/80 to-amber-50 dark:from-amber-900/20 dark:via-amber-900/10 dark:to-amber-900/20 border-b border-amber-200 dark:border-amber-800 px-4 py-3">
           <div className="flex items-center justify-between max-w-7xl mx-auto">
             <p className="text-sm text-amber-800 dark:text-amber-200">
               ⚠️ Your email address is not verified. <Link to="/settings" className="underline hover:no-underline font-medium">Verify it now</Link> to receive notifications.
@@ -91,42 +91,44 @@ export default function AuthLayout({
           </div>
         </div>
       )}
-      {/* Desktop: Single row layout (sticky entire header) */}
-      <header className="hidden md:block sticky top-0 bg-green-100 dark:bg-green-900 p-4 border-b border-green-300 dark:border-green-700">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-6">
+      {/* Desktop: Bookmark tabs pinned to top */}
+      <header className="hidden md:block sticky top-0 z-20 px-4 pt-0 overflow-visible">
+        <div className="flex justify-between items-start">
+          <div className="flex items-start gap-1">
             <Link
               to="/settings"
-              className={`px-3 py-1 rounded text-sm logged-in-user ${
+              className={`px-4 rounded-b-xl text-sm font-medium logged-in-user ${
                 location.pathname === "/settings"
-                  ? "bg-green-600 text-white"
-                  : "text-green-800 dark:text-white hover:bg-green-200 hover:text-green-900 dark:hover:bg-green-800 dark:hover:text-green-100"
+                  ? "pt-4 pb-2.5 -mb-2 bg-gradient-to-b from-green-600 to-green-500 text-white shadow-md shadow-green-600/30 dark:from-green-800 dark:to-green-700 dark:shadow-green-400/20 border-x border-b border-transparent"
+                  : "py-2 bg-white/70 dark:bg-emerald-950/60 text-green-800 dark:text-green-200 hover:bg-white/90 dark:hover:bg-emerald-900/60 border-x border-b border-green-200/40 dark:border-green-800/40"
               }`}
             >
-              Logged in: {user.username}
+              {user.username}
             </Link>
             {user.isAdmin && <Navigation />}
           </div>
-          <Form method="post" action="/logout">
-            <Button
-              type="submit"
-              variant="secondary"
-            >
-              Logout
-            </Button>
-          </Form>
+          <div className="py-2">
+            <Form method="post" action="/logout">
+              <Button
+                type="submit"
+                variant="secondary"
+              >
+                Logout
+              </Button>
+            </Form>
+          </div>
         </div>
       </header>
 
       {/* Mobile: Top row - User info and logout (not sticky) */}
-      <div className="md:hidden p-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="md:hidden p-4 border-b border-gray-200 dark:border-gray-700 backdrop-blur-md">
         <div className="flex justify-between items-center">
           <Link
             to="/settings"
-            className={`px-3 py-1 rounded text-sm logged-in-user ${
+            className={`px-3 py-1 rounded-lg text-sm logged-in-user ${
               location.pathname === "/settings"
-                ? "bg-green-600 text-white"
-                : "text-gray-900 dark:text-gray-100 hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                ? "bg-gradient-to-r from-green-600 to-green-500 text-white shadow-md shadow-green-600/30 dark:shadow-green-400/20"
+                : "text-gray-900 dark:text-gray-100 hover:bg-gray-200/60 hover:text-gray-900 dark:hover:bg-white/10 dark:hover:text-gray-100"
             }`}
           >
             Logged in: {user.username}
@@ -142,10 +144,10 @@ export default function AuthLayout({
         </div>
       </div>
 
-      {/* Mobile: Navigation (sticky) */}
+      {/* Mobile: Navigation tabs (sticky) */}
       {user.isAdmin && (
-        <div className="md:hidden sticky top-0 z-10 bg-green-100 dark:bg-green-900 border-b border-green-300 dark:border-green-700 overflow-x-auto">
-          <Navigation className="p-4 whitespace-nowrap" />
+        <div className="md:hidden sticky top-0 z-20 px-4 pt-0 overflow-visible">
+          <Navigation className="py-0 whitespace-nowrap" />
         </div>
       )}
       <Outlet />

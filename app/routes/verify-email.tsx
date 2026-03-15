@@ -39,12 +39,16 @@ export default function VerifyEmail({ loaderData }: Route.ComponentProps) {
   return (
     <main className="flex items-center justify-center min-h-screen p-4">
       <div className="max-w-md w-full">
-        <div className={`rounded-3xl border p-8 text-center ${
+        <div className={`${loaderData.success ? 'rounded-card' : 'rounded-card-alt'} border p-8 text-center ${
           loaderData.success
-            ? 'border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950'
-            : 'border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950'
+            ? 'border-green-200 bg-gradient-to-br from-green-50 to-green-100/50 shadow-lg shadow-green-500/10 dark:border-green-900 dark:from-green-950 dark:to-green-900/50'
+            : 'border-red-200 bg-gradient-to-br from-red-50 to-red-100/50 shadow-lg shadow-red-500/10 dark:border-red-900 dark:from-red-950 dark:to-red-900/50'
         }`}>
-          <div className="text-5xl mb-4">
+          <div className={`text-5xl mb-4 inline-flex items-center justify-center w-16 h-16 rounded-full ${
+            loaderData.success
+              ? 'bg-green-100 dark:bg-green-900/50'
+              : 'bg-red-100 dark:bg-red-900/50'
+          }`}>
             {loaderData.success ? '✓' : '✗'}
           </div>
           <h1 className={`text-2xl font-semibold mb-2 ${
@@ -63,7 +67,7 @@ export default function VerifyEmail({ loaderData }: Route.ComponentProps) {
           {loaderData.success && loaderData.isLoggedIn && (
             <Link
               to="/dashboard"
-              className="mt-4 inline-block px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              className="mt-4 inline-block px-4 py-2 bg-gradient-to-r from-green-600 to-green-500 text-white rounded-lg hover:shadow-md hover:shadow-green-500/25 transition-all duration-200"
             >
               Return to Dashboard
             </Link>
@@ -71,7 +75,7 @@ export default function VerifyEmail({ loaderData }: Route.ComponentProps) {
           {loaderData.success && !loaderData.isLoggedIn && (
             <Link
               to="/"
-              className="mt-4 inline-block px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              className="mt-4 inline-block px-4 py-2 bg-gradient-to-r from-green-600 to-green-500 text-white rounded-lg hover:shadow-md hover:shadow-green-500/25 transition-all duration-200"
             >
               Go to Login
             </Link>

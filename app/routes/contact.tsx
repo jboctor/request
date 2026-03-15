@@ -72,13 +72,13 @@ export default function Contact({ actionData }: Route.ComponentProps) {
         </div>
 
         {actionData?.error && (
-          <div className="mb-4 text-red-600 text-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+          <div className="mb-4 text-red-600 text-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800 border-l-4 border-l-red-500">
             {actionData.error}
           </div>
         )}
 
         {actionData?.success && (
-          <div className="mb-4 text-green-600 text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+          <div className="mb-4 text-green-600 text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800 border-l-4 border-l-green-500">
             {actionData.success}
           </div>
         )}
@@ -92,7 +92,7 @@ export default function Contact({ actionData }: Route.ComponentProps) {
               name="requestType"
               id="requestType"
               required
-              className="w-full dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:focus:ring-blue-500 h-10 px-3 rounded-lg border border-gray-200 focus:ring-1 focus:ring-blue-500"
+              className="w-full dark:bg-gray-800/80 dark:text-gray-200 dark:border-gray-600 h-10 px-4 rounded-lg border border-gray-200 bg-gray-50/50 focus:ring-1 focus:ring-green-500/40 focus:border-green-400"
             >
               <option value="password-reset">Reset my password</option>
               <option value="general">General question or issue</option>
@@ -108,7 +108,7 @@ export default function Contact({ actionData }: Route.ComponentProps) {
               name="username"
               id="username"
               required
-              className="w-full dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:focus:ring-blue-500 h-10 px-3 rounded-lg border border-gray-200 focus:ring-1 focus:ring-blue-500"
+              className="w-full dark:bg-gray-800/80 dark:text-gray-200 dark:border-gray-600 h-10 px-4 rounded-lg border border-gray-200 bg-gray-50/50 focus:ring-1 focus:ring-green-500/40 focus:border-green-400"
             />
           </div>
 
@@ -120,7 +120,7 @@ export default function Contact({ actionData }: Route.ComponentProps) {
               name="message"
               id="message"
               rows={4}
-              className="w-full dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:focus:ring-blue-500 px-3 py-2 rounded-lg border border-gray-200 focus:ring-1 focus:ring-blue-500 resize-none"
+              className="w-full dark:bg-gray-800/80 dark:text-gray-200 dark:border-gray-600 px-4 py-2 rounded-lg border border-gray-200 bg-gray-50/50 focus:ring-1 focus:ring-green-500/40 focus:border-green-400 resize-none"
             />
           </div>
 
@@ -135,7 +135,7 @@ export default function Contact({ actionData }: Route.ComponentProps) {
         </Form>
 
         <div className="mt-6 text-center">
-          <Link to="/" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+          <Link to="/" className="text-sm text-green-600 dark:text-green-400 hover:underline">
             Back to Login
           </Link>
         </div>

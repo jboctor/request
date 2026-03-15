@@ -89,7 +89,7 @@ export function Requests({
         const status = isDeleted ? "deleted" : (isCompleted ? "completed" : "pending");
 
         return (
-          <div key={request.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+          <div key={request.id} className="p-4 border border-gray-200/60 dark:border-gray-700/40 rounded-card-alt bg-white/50 dark:bg-gray-800/30 hover:shadow-md dark:hover:shadow-green-500/5 transition-shadow duration-200">
             <div className="flex justify-between items-center">
               <div className="flex-1">
                 <h3 className="font-medium">{request.title}</h3>
@@ -183,12 +183,12 @@ export function Requests({
                   </div>
                 ) : (
                   <>
-                    <span className={`text-xs px-2 py-1 rounded-full ${
+                    <span className={`text-xs px-2 py-1 rounded-full border ${
                       status === "pending"
-                        ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                        ? "bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-700"
                         : status === "completed"
-                          ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                          : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                          ? "bg-green-100 text-green-800 border-green-300 dark:bg-green-900 dark:text-green-200 dark:border-green-700"
+                          : "bg-red-100 text-red-800 border-red-300 dark:bg-red-900 dark:text-red-200 dark:border-red-700"
                     }`}>
                       {status === "pending" ? "Pending" : status === "completed" ? "Completed" : "Deleted"}
                     </span>
@@ -240,8 +240,8 @@ export function Requests({
               </div>
             </div>
             {request.notes && (
-              <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                <p className="text-xs text-gray-600 dark:text-gray-400 p-2 bg-gray-50 dark:bg-gray-800 rounded border-l-2 border-blue-500">
+              <div className="mt-3 pt-3 border-t border-gray-200/60 dark:border-gray-700/60">
+                <p className="text-xs text-gray-600 dark:text-gray-400 p-2 bg-green-50/50 dark:bg-green-800/15 rounded-r-lg border-l-3 border-green-500">
                   <strong>Note:</strong> {request.notes}
                 </p>
               </div>

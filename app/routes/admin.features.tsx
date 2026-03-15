@@ -111,7 +111,7 @@ export default function AdminFeatures({ actionData, loaderData }: Route.Componen
         <header className="flex flex-col items-center gap-9">
           <h1 className="sr-only">Feature Management</h1>
           <div className="w-[900px] max-w-[100vw] p-4">
-            <h1 className="block w-full text-center text-2xl">Feature Management</h1>
+            <h1 className="block w-full text-center text-3xl font-semibold tracking-tight">Feature Management</h1>
           </div>
         </header>
 
@@ -138,7 +138,7 @@ export default function AdminFeatures({ actionData, loaderData }: Route.Componen
                   <select
                     name="page"
                     required
-                    className="w-full p-2 border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600"
+                    className="w-full h-10 px-4 rounded-lg border border-gray-200 bg-gray-50/50 dark:bg-gray-800/80 dark:border-gray-600 focus:ring-1 focus:ring-green-500/40 focus:border-green-400"
                   >
                     <option value="">Select a page</option>
                     {pageOptions.map((option) => (
@@ -155,7 +155,7 @@ export default function AdminFeatures({ actionData, loaderData }: Route.Componen
                     type="text"
                     name="selector"
                     required
-                    className="w-full p-2 border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600"
+                    className="w-full h-10 px-4 rounded-lg border border-gray-200 bg-gray-50/50 dark:bg-gray-800/80 dark:border-gray-600 focus:ring-1 focus:ring-green-500/40 focus:border-green-400"
                     placeholder="e.g., #create-request-btn, .nav-item"
                   />
                 </div>
@@ -167,7 +167,7 @@ export default function AdminFeatures({ actionData, loaderData }: Route.Componen
                     name="title"
                     required
                     minLength={3}
-                    className="w-full p-2 border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600"
+                    className="w-full h-10 px-4 rounded-lg border border-gray-200 bg-gray-50/50 dark:bg-gray-800/80 dark:border-gray-600 focus:ring-1 focus:ring-green-500/40 focus:border-green-400"
                     placeholder="Enter feature title"
                   />
                 </div>
@@ -179,7 +179,7 @@ export default function AdminFeatures({ actionData, loaderData }: Route.Componen
                     required
                     minLength={10}
                     rows={3}
-                    className="w-full p-2 border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 resize-none"
+                    className="w-full px-4 py-2 rounded-lg border border-gray-200 bg-gray-50/50 dark:bg-gray-800/80 dark:border-gray-600 focus:ring-1 focus:ring-green-500/40 focus:border-green-400 resize-none"
                     placeholder="Describe the new feature..."
                   />
                 </div>
@@ -208,7 +208,7 @@ export default function AdminFeatures({ actionData, loaderData }: Route.Componen
             ) : (
               <div className="space-y-3">
                 {features.map((feature) => (
-                  <div key={feature.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                  <div key={feature.id} className="p-4 border border-gray-200/60 dark:border-gray-700/40 rounded-card-alt bg-white/50 dark:bg-gray-800/30 hover:shadow-md transition-shadow duration-200">
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <h3 className="font-medium">{feature.title}</h3>
@@ -222,7 +222,7 @@ export default function AdminFeatures({ actionData, loaderData }: Route.Componen
                         </div>
                       </div>
                       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 ml-4">
-                        <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                        <span className="text-xs px-2 py-1 rounded-full border border-green-300 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 dark:border-green-700">
                           Active
                         </span>
                         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">

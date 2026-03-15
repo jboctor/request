@@ -133,20 +133,20 @@ export default function Dashboard({ actionData, loaderData }: Route.ComponentPro
             <div className="flex border-b border-gray-200 dark:border-gray-700">
               <button
                 onClick={() => handleTabChange("request")}
-                className={`px-4 py-2 text-sm font-medium border-b-2 ${
+                className={`px-4 py-2 text-sm font-medium border-b-2 rounded-t-lg ${
                   activeTab === "request"
-                    ? "border-blue-500 text-blue-600 dark:text-blue-400"
-                    : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    ? "border-green-500 text-green-600 dark:text-green-400 bg-green-50/50 dark:bg-green-400/10"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-white/5"
                 }`}
               >
                 Request Service
               </button>
               <button
                 onClick={() => handleTabChange("view")}
-                className={`px-4 py-2 text-sm font-medium border-b-2 ${
+                className={`px-4 py-2 text-sm font-medium border-b-2 rounded-t-lg ${
                   activeTab === "view"
-                    ? "border-blue-500 text-blue-600 dark:text-blue-400"
-                    : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    ? "border-green-500 text-green-600 dark:text-green-400 bg-green-50/50 dark:bg-green-400/10"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-white/5"
                 }`}
               >
                 View Requests
@@ -157,14 +157,14 @@ export default function Dashboard({ actionData, loaderData }: Route.ComponentPro
             {activeTab === "request" ? (
               <SectionWrapper id="request-service">
                 <h2 className="text-center text-lg font-medium mb-4">Make a Request</h2>
-                <div className="text-sm text-gray-600 dark:text-gray-400 text-center mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <div className="text-sm text-gray-600 dark:text-gray-400 text-center mb-4 p-3 bg-green-50 dark:bg-green-400/10 rounded-card-alt border border-green-200 dark:border-green-800 border-l-4 border-l-green-500">
                   💡 <strong>Tip:</strong> Please provide as much detail as possible in your request title, including author, release date, edition, or any other identifying information to help us find exactly what you're looking for.
                 </div>
                 {actionData?.error && (
-                  <div className="text-red-600 text-center mb-4">{actionData.error}</div>
+                  <div className="text-red-600 text-center mb-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800 border-l-4 border-l-red-500">{actionData.error}</div>
                 )}
                 {actionData?.success && (
-                  <div className="text-green-600 text-center mb-4">{actionData.success}</div>
+                  <div className="text-green-600 text-center mb-4 p-3 bg-green-50 dark:bg-green-400/10 rounded-lg border border-green-200 dark:border-green-800 border-l-4 border-l-green-500">{actionData.success}</div>
                 )}
                 <Form method="post" className="space-y-4">
                   {/* CSRF Protection Token */}
@@ -175,7 +175,7 @@ export default function Dashboard({ actionData, loaderData }: Route.ComponentPro
                       name="mediaType"
                       id="mediaType"
                       required
-                      className="w-full dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:focus:ring-blue-500 h-10 px-3 rounded-lg border border-gray-200 focus:ring-1 focus:ring-blue-500"
+                      className="w-full bg-gray-50/50 dark:bg-gray-800/80 dark:text-gray-200 dark:border-gray-600 h-10 px-4 rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500/40 focus:border-green-400"
                     >
                       <option value="">Select Media Type</option>
                       {requestMediaTypeEnum.enumValues.map((mediaType) => (
@@ -193,7 +193,7 @@ export default function Dashboard({ actionData, loaderData }: Route.ComponentPro
                       placeholder="Title"
                       maxLength={255}
                       required
-                      className="w-full dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:focus:ring-blue-500 h-10 px-3 rounded-lg border border-gray-200 focus:ring-1 focus:ring-blue-500"
+                      className="w-full bg-gray-50/50 dark:bg-gray-800/80 dark:text-gray-200 dark:border-gray-600 h-10 px-4 rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500/40 focus:border-green-400"
                     />
                   </div>
                   <Button

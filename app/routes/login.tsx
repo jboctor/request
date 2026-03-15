@@ -122,13 +122,13 @@ export default function Home({ actionData, loaderData }: Route.ComponentProps) {
         <header className="flex flex-col items-center gap-9">
           <h1 className="sr-only">Please Sign In</h1>
           <div className="w-[500px] max-w-[100vw] p-4">
-            <h1 className="block w-full text-center text-2xl">Welcome to {adminName} Services</h1>
+            <h1 className="block w-full text-center text-3xl font-semibold tracking-tight">Welcome to {adminName} Services</h1>
           </div>
         </header>
         <div className="max-w-[300px] w-full space-y-6 px-4">
-          <section className="rounded-3xl border border-gray-200 p-6 dark:border-gray-700 space-y-4">
+          <section className="rounded-card border border-gray-200/60 bg-white/80 backdrop-blur-sm shadow-lg shadow-green-900/5 p-8 dark:border-emerald-800/30 dark:bg-emerald-950/40 dark:shadow-green-500/[0.03] space-y-4">
             {actionData?.error && (
-              <div className="text-red-600 text-center mb-4">{actionData.error}</div>
+              <div className="text-red-600 text-center mb-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800 border-l-4 border-l-red-500">{actionData.error}</div>
             )}
             <Form
               method="post"
@@ -150,14 +150,14 @@ export default function Home({ actionData, loaderData }: Route.ComponentProps) {
                 name="username"
                 placeholder="Username"
                 required
-                className="w-full dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:focus:ring-blue-500 h-10 px-3 rounded-lg border border-gray-200 focus:ring-1 focus:ring-blue-500"
+                className="w-full bg-gray-50/50 dark:bg-gray-800/80 dark:text-gray-200 dark:border-gray-600 h-10 px-4 rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500/40 focus:border-green-400"
               />
               <input
                 name="password"
                 type="password"
                 placeholder="Password"
                 required
-                className="w-full dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:focus:ring-blue-500 h-10 px-3 rounded-lg border border-gray-200 focus:ring-1 focus:ring-blue-500"
+                className="w-full bg-gray-50/50 dark:bg-gray-800/80 dark:text-gray-200 dark:border-gray-600 h-10 px-4 rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500/40 focus:border-green-400"
               />
               <Button
                 type="submit"
@@ -169,7 +169,7 @@ export default function Home({ actionData, loaderData }: Route.ComponentProps) {
               </Button>
             </Form>
             <div className="text-center mt-4">
-              <Link to="/contact" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+              <Link to="/contact" className="text-sm text-green-600 dark:text-green-400 hover:underline">
                 Need help? Contact {adminName}
               </Link>
             </div>
