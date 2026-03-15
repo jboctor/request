@@ -124,6 +124,10 @@ export class NewFeatureService {
       .where(eq(schema.userFeatureDismissal.userId, userId));
   }
 
+  static async clearAllDismissals(): Promise<void> {
+    await this.db.delete(schema.userFeatureDismissal);
+  }
+
   static async clearAllDismissalsForFeature(featureId: number): Promise<void> {
     await this.db
       .delete(schema.userFeatureDismissal)

@@ -15,23 +15,36 @@ const variantClasses = {
 };
 
 const DEFAULT_TIMEOUT = 5000;
+const ANIMATION_DURATION = 300;
 
 export function Alert({ variant, children, className = "", timeout }: AlertProps) {
   const [visible, setVisible] = useState(true);
+  const [dismissing, setDismissing] = useState(false);
   const duration = timeout ?? DEFAULT_TIMEOUT;
 
   useEffect(() => {
     setVisible(true);
+    setDismissing(false);
     if (duration <= 0) return;
-    const timer = setTimeout(() => setVisible(false), duration);
+    const timer = setTimeout(() => setDismissing(true), duration);
     return () => clearTimeout(timer);
   }, [children, duration]);
+
+  useEffect(() => {
+    if (!dismissing) return;
+    const timer = setTimeout(() => setVisible(false), ANIMATION_DURATION);
+    return () => clearTimeout(timer);
+  }, [dismissing]);
 
   if (!visible) return null;
 
   return (
     <div
-      className={`text-center mb-4 p-3 rounded-lg border border-l-4 transition-opacity duration-300 ${variantClasses[variant]} ${className}`}
+      className={`text-center mb-4 p-3 rounded-lg border border-l-4 transition-all overflow-hidden ${variantClasses[variant]} ${className}`}
+      style={{
+        transitionDuration: `${ANIMATION_DURATION}ms`,
+        ...(dismissing ? { maxHeight: 0, opacity: 0, marginBottom: 0, paddingTop: 0, paddingBottom: 0 } : { maxHeight: '200px', opacity: 1 }),
+      }}
     >
       {children}
     </div>

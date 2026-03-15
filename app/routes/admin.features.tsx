@@ -63,6 +63,19 @@ export async function action({ request }: Route.ActionArgs) {
         return { success: "Dismissal cleared for user - they will see this feature again" };
       }
 
+      case "clear-all-dismissals": {
+        await NewFeatureService.clearAllDismissals();
+        return { success: "All dismissals cleared for all features - users will see all features again" };
+      }
+
+      case "clear-all-dismissals-for-user": {
+        const userId = parseInt(formData.get("userId") as string);
+        if (!userId) return { error: "Please select a user" };
+
+        await NewFeatureService.clearAllDismissalsForUser(userId);
+        return { success: "All dismissals cleared for user - they will see all features again" };
+      }
+
       case "deactivate": {
         const featureId = parseInt(formData.get("featureId") as string);
         if (!featureId) return { error: "Invalid feature ID" };
@@ -100,6 +113,7 @@ export default function AdminFeatures({ actionData, loaderData }: Route.Componen
   const navigation = useNavigation();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [resetFeature, setResetFeature] = useState<{ id: number; title: string } | null>(null);
+  const [showResetAll, setShowResetAll] = useState(false);
   const createFormRef = useRef<HTMLFormElement>(null);
 
   const isSubmitting = navigation.state === "submitting";
@@ -109,6 +123,7 @@ export default function AdminFeatures({ actionData, loaderData }: Route.Componen
     if (actionData?.success && !isSubmitting) {
       setShowCreateForm(false);
       setResetFeature(null);
+      setShowResetAll(false);
     }
   }, [actionData?.success, isSubmitting]);
 
@@ -202,7 +217,17 @@ export default function AdminFeatures({ actionData, loaderData }: Route.Componen
       <FilteredItemsSection
         title={`Active Features (${features.length})`}
         actionData={actionData}
-        filterControls={<></>}
+        filterControls={
+          features.length > 0 ? (
+            <Button
+              variant="alert"
+              disabled={isSubmitting}
+              onClick={() => setShowResetAll(true)}
+            >
+              Reset All
+            </Button>
+          ) : <></>
+        }
       >
         {!features.length ? (
           <div className="text-center text-gray-500 dark:text-gray-400 py-8">
@@ -321,6 +346,69 @@ export default function AdminFeatures({ actionData, loaderData }: Route.Componen
             <Button
               variant="info"
               onClick={() => setResetFeature(null)}
+              className="w-full"
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
+      {/* Reset All Dismissals Modal */}
+      {showResetAll && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowResetAll(false); }}
+        >
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 p-6 w-full max-w-md mx-4 space-y-4">
+            <h3 className="text-lg font-medium">Reset All Dismissals</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Reset dismissals for <strong>all features</strong>
+            </p>
+
+            <Form method="post">
+              <CsrfInput />
+              <input type="hidden" name="action" value="clear-all-dismissals" />
+              <Button
+                type="submit"
+                variant="alert"
+                disabled={isSubmitting}
+                className="w-full"
+                onClick={(e) => {
+                  if (!confirm("Clear all dismissals for all features? All users will see all features again.")) {
+                    e.preventDefault();
+                  }
+                }}
+              >
+                Reset for All Users
+              </Button>
+            </Form>
+
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+              <Form method="post" className="space-y-3">
+                <CsrfInput />
+                <input type="hidden" name="action" value="clear-all-dismissals-for-user" />
+                <FormSelect name="userId" required>
+                  <option value="">Select a user</option>
+                  {users.map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.username}
+                    </option>
+                  ))}
+                </FormSelect>
+                <Button
+                  type="submit"
+                  variant="warning"
+                  disabled={isSubmitting}
+                  className="w-full"
+                >
+                  Reset for User
+                </Button>
+              </Form>
+            </div>
+
+            <Button
+              variant="info"
+              onClick={() => setShowResetAll(false)}
               className="w-full"
             >
               Cancel
