@@ -19,19 +19,19 @@ const variantStyles = {
   },
   info: {
     base: 'bg-gray-100 border border-gray-300 text-gray-700 dark:bg-black dark:border-gray-600 dark:text-gray-300',
-    hover: 'hover:shadow-sm hover:shadow-gray-300/25 dark:hover:shadow-gray-500/15'
+    hover: 'hover:shadow-sm hover:shadow-gray-300/25 dark:hover:shadow-gray-500/15 hover:bg-gray-200 dark:hover:bg-gray-900'
   },
   success: {
     base: 'bg-green-100 border border-green-300 text-green-800 dark:bg-green-900 dark:border-green-700 dark:text-green-200',
-    hover: 'hover:shadow-sm hover:shadow-green-300/25 dark:hover:shadow-green-400/15'
+    hover: 'hover:shadow-sm hover:shadow-green-300/25 dark:hover:shadow-green-400/15 hover:bg-green-200 dark:hover:bg-green-800'
   },
   warning: {
     base: 'bg-yellow-100 border border-yellow-300 text-yellow-800 dark:bg-yellow-900 dark:border-yellow-700 dark:text-yellow-200',
-    hover: 'hover:shadow-sm hover:shadow-yellow-300/25 dark:hover:shadow-yellow-400/15'
+    hover: 'hover:shadow-sm hover:shadow-yellow-300/25 dark:hover:shadow-yellow-400/15 hover:bg-yellow-200 dark:hover:bg-yellow-800'
   },
   alert: {
     base: 'bg-red-100 border border-red-300 text-red-800 dark:bg-red-900 dark:border-red-700 dark:text-red-200',
-    hover: 'hover:shadow-sm hover:shadow-red-300/25 dark:hover:shadow-red-400/15'
+    hover: 'hover:shadow-sm hover:shadow-red-300/25 dark:hover:shadow-red-400/15 hover:bg-red-200 dark:hover:bg-red-800'
   }
 };
 
