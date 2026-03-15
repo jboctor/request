@@ -9,6 +9,11 @@ import { Button } from "~/components/Button";
 import { Requests } from "~/components/Requests";
 import { FilteredItemsSection } from "~/components/FilteredItemsSection";
 import { SectionWrapper } from "~/components/SectionWrapper";
+import { Alert } from "~/components/Alert";
+import { FormInput, FormSelect } from "~/components/FormField";
+import { PageLayout } from "~/components/PageLayout";
+import { TabNav } from "~/components/TabNav";
+import { CsrfInput } from "~/components/CsrfInput";
 
 export function meta({ matches }: Route.MetaArgs) {
   const rootData = matches[0].loaderData as { adminName?: string };
@@ -111,142 +116,110 @@ export default function Dashboard({ actionData, loaderData }: Route.ComponentPro
     return () => clearInterval(interval);
   }, [fetcher]);
 
-  const handleTabChange = (tab: "request" | "view") => {
-    setActiveTab(tab);
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab as "request" | "view");
     localStorage.setItem("dashboard-active-tab", tab);
   };
 
   const currentRequests = fetcher.data?.requests || loaderData?.requests || [];
 
   return (
-    <main className="flex items-center justify-center pt-16 pb-4">
-      <div className="flex-1 flex flex-col items-center gap-16 min-h-0">
-        <header className="flex flex-col items-center gap-9">
-          <h1 className="sr-only">Hello</h1>
-          <div className="w-[900px] max-w-[100vw] p-4">
-            <h1 className="block w-full text-center text-2xl">Welcome to {adminName} Services</h1>
-          </div>
-        </header>
-        <div className="max-w-[900px] w-full space-y-6 px-4">
-          <section className="space-y-4">
-            {/* Tab Navigation */}
-            <div className="flex border-b border-gray-200 dark:border-gray-700">
-              <button
-                onClick={() => handleTabChange("request")}
-                className={`px-4 py-2 text-sm font-medium border-b-2 rounded-t-lg ${
-                  activeTab === "request"
-                    ? "border-green-500 text-green-600 dark:text-green-400 bg-green-50/50 dark:bg-green-400/10"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-white/5"
-                }`}
-              >
-                Request Service
-              </button>
-              <button
-                onClick={() => handleTabChange("view")}
-                className={`px-4 py-2 text-sm font-medium border-b-2 rounded-t-lg ${
-                  activeTab === "view"
-                    ? "border-green-500 text-green-600 dark:text-green-400 bg-green-50/50 dark:bg-green-400/10"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-white/5"
-                }`}
-              >
-                View Requests
-              </button>
+    <PageLayout title={`Welcome to ${adminName} Services`} srTitle="Hello">
+      <section className="space-y-4">
+        <TabNav
+          tabs={[
+            { key: "request", label: "Request Service" },
+            { key: "view", label: "View Requests" },
+          ]}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+        />
+
+        {/* Tab Content */}
+        {activeTab === "request" ? (
+          <SectionWrapper id="request-service">
+            <h2 className="text-center text-lg font-medium mb-4">Make a Request</h2>
+            <div className="text-sm text-gray-600 dark:text-gray-400 text-center mb-4 p-3 bg-green-50 dark:bg-green-400/10 rounded-card-alt border border-green-200 dark:border-green-800 border-l-4 border-l-green-500">
+              💡 <strong>Tip:</strong> Please provide as much detail as possible in your request title, including author, release date, edition, or any other identifying information to help us find exactly what you're looking for.
             </div>
-
-            {/* Tab Content */}
-            {activeTab === "request" ? (
-              <SectionWrapper id="request-service">
-                <h2 className="text-center text-lg font-medium mb-4">Make a Request</h2>
-                <div className="text-sm text-gray-600 dark:text-gray-400 text-center mb-4 p-3 bg-green-50 dark:bg-green-400/10 rounded-card-alt border border-green-200 dark:border-green-800 border-l-4 border-l-green-500">
-                  💡 <strong>Tip:</strong> Please provide as much detail as possible in your request title, including author, release date, edition, or any other identifying information to help us find exactly what you're looking for.
-                </div>
-                {actionData?.error && (
-                  <div className="text-red-600 text-center mb-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800 border-l-4 border-l-red-500">{actionData.error}</div>
-                )}
-                {actionData?.success && (
-                  <div className="text-green-600 text-center mb-4 p-3 bg-green-50 dark:bg-green-400/10 rounded-lg border border-green-200 dark:border-green-800 border-l-4 border-l-green-500">{actionData.success}</div>
-                )}
-                <Form method="post" className="space-y-4">
-                  {/* CSRF Protection Token */}
-                  <input type="hidden" name="csrfToken" value={rootData?.csrfToken || ""} />
-
-                  <div>
-                    <select
-                      name="mediaType"
-                      id="mediaType"
-                      required
-                      className="w-full bg-gray-50/50 dark:bg-gray-800/80 dark:text-gray-200 dark:border-gray-600 h-10 px-4 rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500/40 focus:border-green-400"
-                    >
-                      <option value="">Select Media Type</option>
-                      {requestMediaTypeEnum.enumValues.map((mediaType) => (
-                        <option key={mediaType} value={mediaType}>
-                          {mediaType}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <input
-                      type="text"
-                      name="title"
-                      id="title"
-                      placeholder="Title"
-                      maxLength={255}
-                      required
-                      className="w-full bg-gray-50/50 dark:bg-gray-800/80 dark:text-gray-200 dark:border-gray-600 h-10 px-4 rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500/40 focus:border-green-400"
-                    />
-                  </div>
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    loading={navigation.state === "submitting"}
-                    className="w-full h-10 px-3"
-                  >
-                    {navigation.state === "submitting" ? "Submitting..." : "Submit Request"}
-                  </Button>
-                </Form>
-              </SectionWrapper>
-            ) : (
-              <FilteredItemsSection
-                title="Your Requests"
-                actionData={actionData}
-                filterControls={
-                  <>
-                    <Button
-                      variant={showPending ? "warning" : "info"}
-                      onClick={() => setShowPending(!showPending)}
-                    >
-                      {showPending ? "Hide" : "Show"} Pending
-                    </Button>
-                    <Button
-                      variant={showCompleted ? "success" : "info"}
-                      onClick={() => setShowCompleted(!showCompleted)}
-                    >
-                      {showCompleted ? "Hide" : "Show"} Completed
-                    </Button>
-                    <Button
-                      variant={showDeleted ? "alert" : "info"}
-                      onClick={() => setShowDeleted(!showDeleted)}
-                    >
-                      {showDeleted ? "Hide" : "Show"} Deleted
-                    </Button>
-                  </>
-                }
-              >
-                <Requests
-                  requests={currentRequests}
-                  showPending={showPending}
-                  showCompleted={showCompleted}
-                  showDeleted={showDeleted}
-                  isAdmin={false}
-                  isSubmitting={navigation.state === "submitting"}
-                  csrfToken={rootData?.csrfToken || ""}
-                />
-              </FilteredItemsSection>
+            {actionData?.error && (
+              <Alert variant="error">{actionData.error}</Alert>
             )}
-          </section>
-        </div>
-      </div>
-    </main>
+            {actionData?.success && (
+              <Alert variant="success">{actionData.success}</Alert>
+            )}
+            <Form method="post" className="space-y-4">
+              <CsrfInput />
+
+              <div>
+                <FormSelect name="mediaType" id="mediaType" required>
+                  <option value="">Select Media Type</option>
+                  {requestMediaTypeEnum.enumValues.map((mediaType) => (
+                    <option key={mediaType} value={mediaType}>
+                      {mediaType}
+                    </option>
+                  ))}
+                </FormSelect>
+              </div>
+              <div>
+                <FormInput
+                  type="text"
+                  name="title"
+                  id="title"
+                  placeholder="Title"
+                  maxLength={255}
+                  required
+                />
+              </div>
+              <Button
+                type="submit"
+                variant="primary"
+                loading={navigation.state === "submitting"}
+                className="w-full h-10 px-3"
+              >
+                {navigation.state === "submitting" ? "Submitting..." : "Submit Request"}
+              </Button>
+            </Form>
+          </SectionWrapper>
+        ) : (
+          <FilteredItemsSection
+            title="Your Requests"
+            actionData={actionData}
+            filterControls={
+              <>
+                <Button
+                  variant={showPending ? "warning" : "info"}
+                  onClick={() => setShowPending(!showPending)}
+                >
+                  {showPending ? "Hide" : "Show"} Pending
+                </Button>
+                <Button
+                  variant={showCompleted ? "success" : "info"}
+                  onClick={() => setShowCompleted(!showCompleted)}
+                >
+                  {showCompleted ? "Hide" : "Show"} Completed
+                </Button>
+                <Button
+                  variant={showDeleted ? "alert" : "info"}
+                  onClick={() => setShowDeleted(!showDeleted)}
+                >
+                  {showDeleted ? "Hide" : "Show"} Deleted
+                </Button>
+              </>
+            }
+          >
+            <Requests
+              requests={currentRequests}
+              showPending={showPending}
+              showCompleted={showCompleted}
+              showDeleted={showDeleted}
+              isAdmin={false}
+              isSubmitting={navigation.state === "submitting"}
+              csrfToken={rootData?.csrfToken || ""}
+            />
+          </FilteredItemsSection>
+        )}
+      </section>
+    </PageLayout>
   );
 }

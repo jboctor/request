@@ -6,6 +6,7 @@ import { RequestActionService } from "~/services/requestActionService";
 import { Button } from "~/components/Button";
 import { Requests } from "~/components/Requests";
 import { FilteredItemsSection } from "~/components/FilteredItemsSection";
+import { PageLayout } from "~/components/PageLayout";
 
 export function meta({ matches }: Route.MetaArgs) {
   const rootData = matches[0].loaderData as { adminName?: string };
@@ -66,54 +67,44 @@ export default function Admin({ actionData, loaderData }: Route.ComponentProps) 
   const currentRequests = fetcher.data?.requests || loaderData?.requests || [];
 
   return (
-    <main className="flex items-center justify-center pt-16 pb-4">
-      <div className="flex-1 flex flex-col items-center gap-16 min-h-0">
-        <header className="flex flex-col items-center gap-9">
-          <h1 className="sr-only">Request Fulfillment</h1>
-          <div className="w-[900px] max-w-[100vw] p-4">
-            <h1 className="block w-full text-center text-3xl font-semibold tracking-tight">Request Fulfillment</h1>
-          </div>
-        </header>
-        <div className="max-w-[900px] w-full space-y-6 px-4">
-          <FilteredItemsSection
-            title="All Requests"
-            actionData={actionData}
-            filterControls={
-              <>
-                <Button
-                  variant={showPending ? "warning" : "info"}
-                  onClick={() => setShowPending(!showPending)}
-                >
-                  {showPending ? "Hide" : "Show"} Pending
-                </Button>
-                <Button
-                  variant={showCompleted ? "success" : "info"}
-                  onClick={() => setShowCompleted(!showCompleted)}
-                >
-                  {showCompleted ? "Hide" : "Show"} Completed
-                </Button>
-                <Button
-                  variant={showDeleted ? "alert" : "info"}
-                  onClick={() => setShowDeleted(!showDeleted)}
-                >
-                  {showDeleted ? "Hide" : "Show"} Deleted
-                </Button>
-              </>
-            }
-          >
-            <Requests
-              requests={currentRequests}
-              showPending={showPending}
-              showCompleted={showCompleted}
-              showDeleted={showDeleted}
-              isAdmin={true}
-              isSubmitting={navigation.state === "submitting"}
-              csrfToken={rootData?.csrfToken || ""}
-              sortOrder="oldest"
-            />
-          </FilteredItemsSection>
-        </div>
-      </div>
-    </main>
+    <PageLayout title="Request Fulfillment" headingSize="xl">
+      <FilteredItemsSection
+        title="All Requests"
+        actionData={actionData}
+        filterControls={
+          <>
+            <Button
+              variant={showPending ? "warning" : "info"}
+              onClick={() => setShowPending(!showPending)}
+            >
+              {showPending ? "Hide" : "Show"} Pending
+            </Button>
+            <Button
+              variant={showCompleted ? "success" : "info"}
+              onClick={() => setShowCompleted(!showCompleted)}
+            >
+              {showCompleted ? "Hide" : "Show"} Completed
+            </Button>
+            <Button
+              variant={showDeleted ? "alert" : "info"}
+              onClick={() => setShowDeleted(!showDeleted)}
+            >
+              {showDeleted ? "Hide" : "Show"} Deleted
+            </Button>
+          </>
+        }
+      >
+        <Requests
+          requests={currentRequests}
+          showPending={showPending}
+          showCompleted={showCompleted}
+          showDeleted={showDeleted}
+          isAdmin={true}
+          isSubmitting={navigation.state === "submitting"}
+          csrfToken={rootData?.csrfToken || ""}
+          sortOrder="oldest"
+        />
+      </FilteredItemsSection>
+    </PageLayout>
   );
 }

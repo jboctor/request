@@ -3,6 +3,8 @@ import { Form, Link, useNavigation, useRouteLoaderData } from "react-router";
 import { useEffect, useRef } from "react";
 import { Button } from "~/components/Button";
 import { EmailService } from "~/services/emailService";
+import { Alert } from "~/components/Alert";
+import { FormInput, FormSelect, FormTextarea } from "~/components/FormField";
 
 export function meta({ matches }: Route.MetaArgs) {
   const rootData = matches[0].loaderData as { adminName?: string };
@@ -72,15 +74,11 @@ export default function Contact({ actionData }: Route.ComponentProps) {
         </div>
 
         {actionData?.error && (
-          <div className="mb-4 text-red-600 text-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800 border-l-4 border-l-red-500">
-            {actionData.error}
-          </div>
+          <Alert variant="error">{actionData.error}</Alert>
         )}
 
         {actionData?.success && (
-          <div className="mb-4 text-green-600 text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800 border-l-4 border-l-green-500">
-            {actionData.success}
-          </div>
+          <Alert variant="success">{actionData.success}</Alert>
         )}
 
         <Form ref={formRef} method="post" className="space-y-4">
@@ -88,40 +86,24 @@ export default function Contact({ actionData }: Route.ComponentProps) {
             <label htmlFor="requestType" className="block text-sm font-medium mb-2">
               What do you need help with?
             </label>
-            <select
-              name="requestType"
-              id="requestType"
-              required
-              className="w-full dark:bg-gray-800/80 dark:text-gray-200 dark:border-gray-600 h-10 px-4 rounded-lg border border-gray-200 bg-gray-50/50 focus:ring-1 focus:ring-green-500/40 focus:border-green-400"
-            >
+            <FormSelect name="requestType" id="requestType" required>
               <option value="password-reset">Reset my password</option>
               <option value="general">General question or issue</option>
-            </select>
+            </FormSelect>
           </div>
 
           <div>
             <label htmlFor="username" className="block text-sm font-medium mb-2">
               Your Username
             </label>
-            <input
-              type="text"
-              name="username"
-              id="username"
-              required
-              className="w-full dark:bg-gray-800/80 dark:text-gray-200 dark:border-gray-600 h-10 px-4 rounded-lg border border-gray-200 bg-gray-50/50 focus:ring-1 focus:ring-green-500/40 focus:border-green-400"
-            />
+            <FormInput type="text" name="username" id="username" required />
           </div>
 
           <div>
             <label htmlFor="message" className="block text-sm font-medium mb-2">
               Additional Details (optional)
             </label>
-            <textarea
-              name="message"
-              id="message"
-              rows={4}
-              className="w-full dark:bg-gray-800/80 dark:text-gray-200 dark:border-gray-600 px-4 py-2 rounded-lg border border-gray-200 bg-gray-50/50 focus:ring-1 focus:ring-green-500/40 focus:border-green-400 resize-none"
-            />
+            <FormTextarea name="message" id="message" rows={4} />
           </div>
 
           <Button

@@ -1,6 +1,9 @@
 import { AuthService } from "~/services/authService";
 import { Button } from "~/components/Button";
 import { UserService } from "~/services/userService";
+import { Alert } from "~/components/Alert";
+import { FormInput } from "~/components/FormField";
+import { CsrfInput } from "~/components/CsrfInput";
 
 import type { Route } from "./+types/login";
 import { Form, Link, useNavigation, useNavigate, useRouteLoaderData } from "react-router";
@@ -128,7 +131,7 @@ export default function Home({ actionData, loaderData }: Route.ComponentProps) {
         <div className="max-w-[300px] w-full space-y-6 px-4">
           <section className="rounded-card border border-gray-200/60 bg-white/80 backdrop-blur-sm shadow-lg shadow-green-900/5 p-8 dark:border-emerald-800/30 dark:bg-emerald-950/40 dark:shadow-green-500/[0.03] space-y-4">
             {actionData?.error && (
-              <div className="text-red-600 text-center mb-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800 border-l-4 border-l-red-500">{actionData.error}</div>
+              <Alert variant="error">{actionData.error}</Alert>
             )}
             <Form
               method="post"
@@ -143,21 +146,18 @@ export default function Home({ actionData, loaderData }: Route.ComponentProps) {
                 });
               }}
             >
-              {/* CSRF Protection Token - Hidden from user but included in form submission */}
-              <input type="hidden" name="csrfToken" value={rootData?.csrfToken || ""} />
+              <CsrfInput />
 
-              <input
+              <FormInput
                 name="username"
                 placeholder="Username"
                 required
-                className="w-full bg-gray-50/50 dark:bg-gray-800/80 dark:text-gray-200 dark:border-gray-600 h-10 px-4 rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500/40 focus:border-green-400"
               />
-              <input
+              <FormInput
                 name="password"
                 type="password"
                 placeholder="Password"
                 required
-                className="w-full bg-gray-50/50 dark:bg-gray-800/80 dark:text-gray-200 dark:border-gray-600 h-10 px-4 rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500/40 focus:border-green-400"
               />
               <Button
                 type="submit"
