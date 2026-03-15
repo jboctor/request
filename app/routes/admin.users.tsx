@@ -292,7 +292,7 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
               const isLastAdmin = user.isAdmin && !isDeleted && loaderData?.adminCount === 1;
 
               return (
-                <div key={user.id} className="p-4 border border-gray-200/60 dark:border-gray-700/40 rounded-card-alt bg-white/50 dark:bg-gray-800/30 hover:shadow-md transition-shadow duration-200">
+                <div key={user.id} className="p-4 border border-gray-200/60 dark:border-gray-700/40 rounded-card-alt bg-white/50 dark:bg-emerald-950/30 hover:shadow-md transition-shadow duration-200">
                   <div className="flex justify-between items-center">
                     <div className="flex-1" title={user.email || undefined}>
                       <div className="flex items-center gap-2">
@@ -360,7 +360,7 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
                               ? "bg-red-100 text-red-800 border-red-300 dark:bg-red-900 dark:text-red-200 dark:border-red-700"
                               : user.isAdmin
                                 ? "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700"
-                                : "bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-900 dark:text-gray-200 dark:border-gray-700"
+                                : "bg-gray-100 text-gray-800 border-gray-300 dark:bg-black dark:text-gray-200 dark:border-gray-700"
                           }`}>
                             {isDeleted ? "Deleted" : user.isAdmin ? "Admin" : "User"}
                           </span>

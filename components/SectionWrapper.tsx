@@ -8,7 +8,7 @@ export function SectionWrapper({ children, className = "", ...props }: SectionWr
   return (
     <section
       {...props}
-      className={`rounded-card border border-gray-200/60 bg-white/80 backdrop-blur-sm shadow-lg shadow-green-900/5 dark:bg-emerald-950/40 dark:border-emerald-800/30 dark:shadow-green-500/[0.03] p-6 space-y-4 ${className}`}
+      className={`rounded-card border border-gray-200/60 bg-white/80 backdrop-blur-sm shadow-lg shadow-green-900/5 dark:bg-transparent dark:border-transparent dark:shadow-none p-6 space-y-4 ${className}`}
     >
       {children}
     </section>

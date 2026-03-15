@@ -18,7 +18,7 @@ const variantStyles = {
     hover: 'hover:bg-gray-100 dark:hover:bg-gray-700/80'
   },
   info: {
-    base: 'bg-gray-100 border border-gray-300 text-gray-700 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300',
+    base: 'bg-gray-100 border border-gray-300 text-gray-700 dark:bg-black dark:border-gray-600 dark:text-gray-300',
     hover: 'hover:shadow-sm hover:shadow-gray-300/25 dark:hover:shadow-gray-500/15'
   },
   success: {

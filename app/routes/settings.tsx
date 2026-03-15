@@ -211,7 +211,7 @@ export default function Settings({ actionData, loaderData }: Route.ComponentProp
         <SectionWrapper id="email-settings-section">
           <h2 className="text-lg font-medium mb-4">Email Address</h2>
           {loaderData?.email ? (
-            <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="mb-4 p-3 bg-gray-50 dark:bg-black rounded-lg border border-gray-200 dark:border-gray-700">
               <div className="flex justify-between items-start mb-2">
                 <div className="flex-1">
                   <p className="text-sm text-gray-600 dark:text-gray-400">

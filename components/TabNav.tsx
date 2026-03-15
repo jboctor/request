@@ -11,19 +11,19 @@ interface TabNavProps {
 }
 
 const activeClasses =
-  "border-green-500 text-green-600 dark:text-green-400 bg-green-50/50 dark:bg-green-400/10";
+  "pt-2.5 -mb-2 pb-4 bg-gradient-to-t from-green-500/40 to-transparent text-green-800 dark:from-green-800 dark:to-transparent dark:text-white shadow-sm shadow-green-600/15 dark:shadow-md dark:shadow-green-400/20";
 const inactiveClasses =
-  "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-white/5";
+  "py-2 bg-gradient-to-t from-green-500/15 to-transparent text-green-700 dark:from-green-800/30 dark:to-transparent dark:text-green-200";
 
 export function TabNav({ tabs, activeTab, onTabChange }: TabNavProps) {
   return (
-    <div className="flex border-b border-gray-200 dark:border-gray-700">
+    <div className="flex gap-1 justify-center">
       {tabs.map((tab) => (
         <button
           key={tab.key}
           id={tab.id}
           onClick={() => onTabChange(tab.key)}
-          className={`px-4 py-2 text-sm font-medium border-b-2 rounded-t-lg ${
+          className={`px-4 rounded-b-xl text-sm font-medium ${
             activeTab === tab.key ? activeClasses : inactiveClasses
           }`}
         >

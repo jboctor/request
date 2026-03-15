@@ -89,7 +89,7 @@ export function Requests({
         const status = isDeleted ? "deleted" : (isCompleted ? "completed" : "pending");
 
         return (
-          <div key={request.id} className="p-4 border border-gray-200/60 dark:border-gray-700/40 rounded-card-alt bg-white/50 dark:bg-gray-800/30 hover:shadow-md dark:hover:shadow-green-500/5 transition-shadow duration-200">
+          <div key={request.id} className="p-4 border border-gray-200/60 dark:border-gray-700/40 rounded-card-alt bg-white/50 dark:bg-emerald-950/30 hover:shadow-md dark:hover:shadow-green-500/5 transition-shadow duration-200">
             <div className="flex justify-between items-center">
               <div className="flex-1">
                 <h3 className="font-medium">{request.title}</h3>
@@ -122,7 +122,7 @@ export function Requests({
                         <textarea
                           name="notes"
                           placeholder="Optional completion note..."
-                          className="text-xs p-2 border border-gray-300 dark:border-gray-600 rounded resize-none dark:bg-gray-800 dark:text-gray-200"
+                          className="text-xs p-2 border border-gray-300 dark:border-gray-600 rounded resize-none dark:bg-black dark:text-gray-200"
                           rows={2}
                         />
                         <div className="flex gap-1">
@@ -152,7 +152,7 @@ export function Requests({
                         <textarea
                           name="notes"
                           placeholder="Optional deletion note..."
-                          className="text-xs p-2 border border-gray-300 dark:border-gray-600 rounded resize-none dark:bg-gray-800 dark:text-gray-200"
+                          className="text-xs p-2 border border-gray-300 dark:border-gray-600 rounded resize-none dark:bg-black dark:text-gray-200"
                           rows={2}
                         />
                         <div className="flex gap-1">

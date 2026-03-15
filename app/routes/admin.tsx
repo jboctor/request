@@ -51,7 +51,6 @@ export default function Admin({ actionData, loaderData }: Route.ComponentProps) 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         fetcher.load("/admin");
-        alert("Fulfillment data refreshed");
       }
     };
 

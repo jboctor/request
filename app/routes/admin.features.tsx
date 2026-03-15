@@ -194,7 +194,7 @@ export default function AdminFeatures({ actionData, loaderData }: Route.Componen
         ) : (
           <div className="space-y-3">
             {features.map((feature) => (
-              <div key={feature.id} className="p-4 border border-gray-200/60 dark:border-gray-700/40 rounded-card-alt bg-white/50 dark:bg-gray-800/30 hover:shadow-md transition-shadow duration-200">
+              <div key={feature.id} className="p-4 border border-gray-200/60 dark:border-gray-700/40 rounded-card-alt bg-white/50 dark:bg-emerald-950/30 hover:shadow-md transition-shadow duration-200">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <h3 className="font-medium">{feature.title}</h3>

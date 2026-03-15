@@ -17,8 +17,8 @@ export function Navigation({ className = "", ...props }: NavigationProps) {
   const linkClass = (path: string) =>
     `px-4 rounded-b-xl text-sm font-medium ${
       location.pathname === path
-        ? "pt-4 pb-2.5 -mb-2 bg-gradient-to-b from-green-600 to-green-500 text-white shadow-md shadow-green-600/30 dark:from-green-800 dark:to-green-700 dark:shadow-green-400/20 border-x border-b border-transparent"
-        : "py-2 bg-white/70 dark:bg-emerald-950/60 text-green-800 dark:text-green-200 hover:bg-white/90 dark:hover:bg-emerald-900/60 border-x border-b border-green-200/40 dark:border-green-800/40"
+        ? "pt-4 pb-2.5 -mb-2 bg-gradient-to-b from-green-500 to-green-700 text-white shadow-md shadow-green-600/30 dark:from-green-700 dark:to-green-900 dark:shadow-green-400/20 border-x border-b border-transparent"
+        : "py-2 bg-gradient-to-b from-green-50 to-green-100/70 dark:from-emerald-950/40 dark:to-emerald-950/80 text-green-800 dark:text-green-200 hover:from-green-100 hover:to-green-150/90 dark:hover:from-emerald-900/50 dark:hover:to-emerald-950/90 border-x border-b border-green-200/40 dark:border-green-800/40"
     }`;
 
   return (

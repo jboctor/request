@@ -222,7 +222,7 @@ export default function FeatureLayout({ loaderData }: Route.ComponentProps) {
 
           {/* Feature description popup */}
           <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-            <div className="feature-popup bg-white/95 dark:bg-gray-900/95 backdrop-blur-md rounded-card shadow-2xl shadow-green-900/10 max-w-md w-full border border-gray-200 dark:border-gray-700">
+            <div className="feature-popup bg-white/95 dark:bg-black/95 backdrop-blur-md rounded-card shadow-2xl shadow-green-900/10 max-w-md w-full border border-gray-200 dark:border-gray-700">
               <div className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">

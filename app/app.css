@@ -16,7 +16,7 @@
 
 html,
 body {
-  @apply min-h-screen bg-gradient-to-br from-white to-green-50/30 dark:from-gray-950 dark:to-gray-900;
+  @apply min-h-screen bg-gradient-to-br from-white to-green-50/30 dark:from-gray-950 dark:to-green-950/40;
 
   @media (prefers-color-scheme: dark) {
     color-scheme: dark;
