@@ -108,7 +108,7 @@ export default function AuthLayout({
             {user.isAdmin && <Navigation />}
           </div>
           <div className="py-2">
-            <Form method="post" action="/logout">
+            <Form method="post" action="/logout" onSubmit={() => localStorage.removeItem("recommendations-cache")}>
               <Button
                 type="submit"
                 variant="secondary"
@@ -133,7 +133,7 @@ export default function AuthLayout({
           >
             Logged in: {user.username}
           </Link>
-          <Form method="post" action="/logout">
+          <Form method="post" action="/logout" onSubmit={() => localStorage.removeItem("recommendations-cache")}>
             <Button
               type="submit"
               variant="secondary"

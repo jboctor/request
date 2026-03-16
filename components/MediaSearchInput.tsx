@@ -11,6 +11,7 @@ interface MediaSearchInputProps {
   maxLength?: number;
   required?: boolean;
   mediaType: string;
+  prefillValue?: string;
 }
 
 export function MediaSearchInput({
@@ -20,6 +21,7 @@ export function MediaSearchInput({
   maxLength,
   required,
   mediaType,
+  prefillValue,
 }: MediaSearchInputProps) {
   const [inputValue, setInputValue] = useState("");
   const [results, setResults] = useState<MediaSearchResult[]>([]);
@@ -112,6 +114,15 @@ export function MediaSearchInput({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Sync prefill value from parent
+  useEffect(() => {
+    if (prefillValue !== undefined) {
+      setInputValue(prefillValue);
+      setResults([]);
+      setIsOpen(false);
+    }
+  }, [prefillValue]);
 
   // Reset when media type changes
   useEffect(() => {

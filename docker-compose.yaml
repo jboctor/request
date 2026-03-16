@@ -8,6 +8,7 @@ services:
             DATABASE_URL: ${DATABASE_URL}
             SESSION_SECRET: ${SESSION_SECRET}
             REDIS_URL: ${REDIS_URL}
+            GEMINI_API_KEY: ${GEMINI_API_KEY}
         ports:
             - "3000:3000"
             - "24678:24678"

@@ -8,6 +8,7 @@ export default [
     layout("routes/layouts/auth-layout.tsx", [
         route("/api/dismiss-feature", "routes/api.dismiss-feature.tsx"),
         route("/api/media-search", "routes/api.media-search.tsx"),
+        route("/api/recommendations", "routes/api.recommendations.tsx"),
         layout("routes/layouts/feature-layout.tsx", [
             route("/dashboard", "routes/dashboard.tsx"),
             route("/settings", "routes/settings.tsx"),
