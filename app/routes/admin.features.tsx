@@ -129,10 +129,18 @@ export async function loader() {
       NewFeatureService.getAllActiveFeatures(),
       UserService.getAllUsers(),
     ]);
-    return { features, users };
+    const dismissals = await NewFeatureService.getDismissalsForFeatures(
+      features.map((f) => f.id)
+    );
+    // Convert Map to plain object for serialization
+    const dismissalsObj: Record<number, string[]> = {};
+    for (const [featureId, usernames] of dismissals) {
+      dismissalsObj[featureId] = usernames;
+    }
+    return { features, users, dismissals: dismissalsObj };
   } catch (error) {
     console.error("Error fetching features:", error);
-    return { features: [], users: [] };
+    return { features: [], users: [], dismissals: {} };
   }
 }
 
@@ -140,10 +148,12 @@ function SortableFeatureCard({
   feature,
   isSubmitting,
   onReset,
+  dismissedBy,
 }: {
   feature: NewFeature;
   isSubmitting: boolean;
   onReset: (feature: { id: number; title: string }) => void;
+  dismissedBy: string[];
 }) {
   const {
     attributes,
@@ -165,6 +175,7 @@ function SortableFeatureCard({
       ref={setNodeRef}
       style={style}
       className="p-4 border border-gray-200/60 dark:border-gray-700/40 rounded-card-alt bg-white/50 dark:bg-emerald-950/30 hover:shadow-md transition-shadow duration-200"
+      title={dismissedBy.length > 0 ? `Dismissed by: ${dismissedBy.join(", ")}` : "No dismissals"}
     >
       <div className="flex justify-between items-start">
         <div className="flex items-start gap-3 flex-1">
@@ -272,19 +283,17 @@ export default function AdminFeatures({ actionData, loaderData }: Route.Componen
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    setFeatureOrder((items) => {
-      const oldIndex = items.findIndex((f) => f.id === active.id);
-      const newIndex = items.findIndex((f) => f.id === over.id);
-      const newOrder = arrayMove(items, oldIndex, newIndex);
+    const oldIndex = featureOrder.findIndex((f) => f.id === active.id);
+    const newIndex = featureOrder.findIndex((f) => f.id === over.id);
+    const newOrder = arrayMove(featureOrder, oldIndex, newIndex);
 
-      const formData = new FormData();
-      formData.set("action", "reorder");
-      formData.set("csrfToken", rootData?.csrfToken || "");
-      formData.set("orderedIds", JSON.stringify(newOrder.map((f) => f.id)));
-      submit(formData, { method: "post" });
+    setFeatureOrder(newOrder);
 
-      return newOrder;
-    });
+    const formData = new FormData();
+    formData.set("action", "reorder");
+    formData.set("csrfToken", rootData?.csrfToken || "");
+    formData.set("orderedIds", JSON.stringify(newOrder.map((f) => f.id)));
+    submit(formData, { method: "post" });
   }
 
   // Common page options for the dropdown
@@ -392,6 +401,7 @@ export default function AdminFeatures({ actionData, loaderData }: Route.Componen
           </div>
         ) : (
           <DndContext
+            id="admin-features-sortable"
             sensors={sensors}
             collisionDetection={closestCenter}
             onDragEnd={handleDragEnd}
@@ -407,6 +417,7 @@ export default function AdminFeatures({ actionData, loaderData }: Route.Componen
                     feature={feature}
                     isSubmitting={isSubmitting}
                     onReset={setResetFeature}
+                    dismissedBy={loaderData?.dismissals?.[feature.id] || []}
                   />
                 ))}
               </div>

@@ -1,6 +1,6 @@
 import { database } from "~/database/context";
 import * as schema from "~/database/schema";
-import { eq, and, notInArray, max } from "drizzle-orm";
+import { eq, and, notInArray, max, inArray } from "drizzle-orm";
 
 export interface NewFeature {
   id: number;
@@ -151,6 +151,28 @@ export class NewFeatureService {
     await this.db
       .delete(schema.userFeatureDismissal)
       .where(eq(schema.userFeatureDismissal.featureId, featureId));
+  }
+
+  static async getDismissalsForFeatures(featureIds: number[]): Promise<Map<number, string[]>> {
+    const result = new Map<number, string[]>();
+    if (featureIds.length === 0) return result;
+
+    const dismissals = await this.db
+      .select({
+        featureId: schema.userFeatureDismissal.featureId,
+        username: schema.user.username,
+      })
+      .from(schema.userFeatureDismissal)
+      .innerJoin(schema.user, eq(schema.userFeatureDismissal.userId, schema.user.id))
+      .where(inArray(schema.userFeatureDismissal.featureId, featureIds));
+
+    for (const row of dismissals) {
+      const list = result.get(row.featureId) || [];
+      list.push(row.username);
+      result.set(row.featureId, list);
+    }
+
+    return result;
   }
 
   static async deactivateFeature(featureId: number): Promise<void> {
