@@ -1,6 +1,6 @@
 import type { Route } from "./+types/admin.features";
 import { useState, useEffect, useRef } from "react";
-import { useNavigation, Form } from "react-router";
+import { useNavigation, Form, useSubmit, useRouteLoaderData } from "react-router";
 import { Button } from "~/components/Button";
 import { NewFeatureService } from "~/services/newFeatureService";
 import { UserService } from "~/services/userService";
@@ -9,6 +9,24 @@ import { SectionWrapper } from "~/components/SectionWrapper";
 import { FormInput, FormSelect, FormTextarea } from "~/components/FormField";
 import { PageLayout } from "~/components/PageLayout";
 import { CsrfInput } from "~/components/CsrfInput";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import type { NewFeature } from "~/services/newFeatureService";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -43,6 +61,15 @@ export async function action({ request }: Route.ActionArgs) {
 
         await NewFeatureService.createFeature({ page, selector, title, description });
         return { success: `Feature "${title}" created successfully` };
+      }
+
+      case "reorder": {
+        const orderedIdsJson = formData.get("orderedIds") as string;
+        if (!orderedIdsJson) return { error: "Missing ordered IDs" };
+
+        const orderedIds: number[] = JSON.parse(orderedIdsJson);
+        await NewFeatureService.reorderFeatures(orderedIds);
+        return { success: "Features reordered successfully" };
       }
 
       case "clear-dismissals": {
@@ -109,14 +136,119 @@ export async function loader() {
   }
 }
 
+function SortableFeatureCard({
+  feature,
+  isSubmitting,
+  onReset,
+}: {
+  feature: NewFeature;
+  isSubmitting: boolean;
+  onReset: (feature: { id: number; title: string }) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: feature.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="p-4 border border-gray-200/60 dark:border-gray-700/40 rounded-card-alt bg-white/50 dark:bg-emerald-950/30 hover:shadow-md transition-shadow duration-200"
+    >
+      <div className="flex justify-between items-start">
+        <div className="flex items-start gap-3 flex-1">
+          <button
+            type="button"
+            className="mt-1 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 touch-none"
+            {...attributes}
+            {...listeners}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <circle cx="5" cy="3" r="1.5" />
+              <circle cx="11" cy="3" r="1.5" />
+              <circle cx="5" cy="8" r="1.5" />
+              <circle cx="11" cy="8" r="1.5" />
+              <circle cx="5" cy="13" r="1.5" />
+              <circle cx="11" cy="13" r="1.5" />
+            </svg>
+          </button>
+          <div className="flex-1">
+            <h3 className="font-medium">{feature.title}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              {feature.description}
+            </p>
+            <div className="flex gap-4 mt-2 text-xs text-gray-500">
+              <span><strong>Page:</strong> {feature.page}</span>
+              <span><strong>Selector:</strong> {feature.selector}</span>
+              <span><strong>Created:</strong> {feature.dateCreatedFormatted}</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 ml-4">
+          <span className="text-xs px-2 py-1 rounded-full border border-green-300 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 dark:border-green-700">
+            Active
+          </span>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <Button
+              variant="alert"
+              disabled={isSubmitting}
+              onClick={() => onReset({ id: feature.id, title: feature.title })}
+              className="w-full sm:w-auto"
+            >
+              Reset
+            </Button>
+            <Form method="post" className="w-full sm:w-auto">
+              <CsrfInput />
+              <input type="hidden" name="action" value="deactivate" />
+              <input type="hidden" name="featureId" value={feature.id} />
+              <Button
+                type="submit"
+                variant="alert"
+                disabled={isSubmitting}
+                onClick={(e) => {
+                  if (!confirm(`Are you sure you want to deactivate "${feature.title}"?`)) {
+                    e.preventDefault();
+                  }
+                }}
+                className="w-full sm:w-auto"
+              >
+                Deactivate
+              </Button>
+            </Form>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminFeatures({ actionData, loaderData }: Route.ComponentProps) {
   const navigation = useNavigation();
+  const submit = useSubmit();
+  const rootData = useRouteLoaderData("root") as { csrfToken?: string };
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [resetFeature, setResetFeature] = useState<{ id: number; title: string } | null>(null);
   const [showResetAll, setShowResetAll] = useState(false);
   const createFormRef = useRef<HTMLFormElement>(null);
 
   const isSubmitting = navigation.state === "submitting";
+
+  const [featureOrder, setFeatureOrder] = useState<NewFeature[]>(loaderData?.features || []);
+
+  useEffect(() => {
+    setFeatureOrder(loaderData?.features || []);
+  }, [loaderData?.features]);
 
   // Clear forms on successful action
   useEffect(() => {
@@ -127,8 +259,33 @@ export default function AdminFeatures({ actionData, loaderData }: Route.Componen
     }
   }, [actionData?.success, isSubmitting]);
 
-  const features = loaderData?.features || [];
   const users = loaderData?.users || [];
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    setFeatureOrder((items) => {
+      const oldIndex = items.findIndex((f) => f.id === active.id);
+      const newIndex = items.findIndex((f) => f.id === over.id);
+      const newOrder = arrayMove(items, oldIndex, newIndex);
+
+      const formData = new FormData();
+      formData.set("action", "reorder");
+      formData.set("csrfToken", rootData?.csrfToken || "");
+      formData.set("orderedIds", JSON.stringify(newOrder.map((f) => f.id)));
+      submit(formData, { method: "post" });
+
+      return newOrder;
+    });
+  }
 
   // Common page options for the dropdown
   const pageOptions = [
@@ -215,10 +372,10 @@ export default function AdminFeatures({ actionData, loaderData }: Route.Componen
 
       {/* Features List */}
       <FilteredItemsSection
-        title={`Active Features (${features.length})`}
+        title={`Active Features (${featureOrder.length})`}
         actionData={actionData}
         filterControls={
-          features.length > 0 ? (
+          featureOrder.length > 0 ? (
             <Button
               variant="alert"
               disabled={isSubmitting}
@@ -229,63 +386,32 @@ export default function AdminFeatures({ actionData, loaderData }: Route.Componen
           ) : <></>
         }
       >
-        {!features.length ? (
+        {!featureOrder.length ? (
           <div className="text-center text-gray-500 dark:text-gray-400 py-8">
             No active features found.
           </div>
         ) : (
-          <div className="space-y-3">
-            {features.map((feature) => (
-              <div key={feature.id} className="p-4 border border-gray-200/60 dark:border-gray-700/40 rounded-card-alt bg-white/50 dark:bg-emerald-950/30 hover:shadow-md transition-shadow duration-200">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <h3 className="font-medium">{feature.title}</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                      {feature.description}
-                    </p>
-                    <div className="flex gap-4 mt-2 text-xs text-gray-500">
-                      <span><strong>Page:</strong> {feature.page}</span>
-                      <span><strong>Selector:</strong> {feature.selector}</span>
-                      <span><strong>Created:</strong> {feature.dateCreatedFormatted}</span>
-                    </div>
-                  </div>
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 ml-4">
-                    <span className="text-xs px-2 py-1 rounded-full border border-green-300 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 dark:border-green-700">
-                      Active
-                    </span>
-                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                      <Button
-                        variant="alert"
-                        disabled={isSubmitting}
-                        onClick={() => setResetFeature({ id: feature.id, title: feature.title })}
-                        className="w-full sm:w-auto"
-                      >
-                        Reset
-                      </Button>
-                      <Form method="post" className="w-full sm:w-auto">
-                        <CsrfInput />
-                        <input type="hidden" name="action" value="deactivate" />
-                        <input type="hidden" name="featureId" value={feature.id} />
-                        <Button
-                          type="submit"
-                          variant="alert"
-                          disabled={isSubmitting}
-                          onClick={(e) => {
-                            if (!confirm(`Are you sure you want to deactivate "${feature.title}"?`)) {
-                              e.preventDefault();
-                            }
-                          }}
-                          className="w-full sm:w-auto"
-                        >
-                          Deactivate
-                        </Button>
-                      </Form>
-                    </div>
-                  </div>
-                </div>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={featureOrder.map((f) => f.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-3">
+                {featureOrder.map((feature) => (
+                  <SortableFeatureCard
+                    key={feature.id}
+                    feature={feature}
+                    isSubmitting={isSubmitting}
+                    onReset={setResetFeature}
+                  />
+                ))}
               </div>
-            ))}
-          </div>
+            </SortableContext>
+          </DndContext>
         )}
       </FilteredItemsSection>
       {/* Reset Dismissals Modal */}

@@ -1,6 +1,6 @@
 import { database } from "~/database/context";
 import * as schema from "~/database/schema";
-import { eq, and, notInArray } from "drizzle-orm";
+import { eq, and, notInArray, max } from "drizzle-orm";
 
 export interface NewFeature {
   id: number;
@@ -11,6 +11,7 @@ export interface NewFeature {
   dateCreated: Date;
   dateCreatedFormatted: string;
   isActive: boolean;
+  displayOrder: number;
 }
 
 export interface CreateNewFeatureData {
@@ -41,12 +42,14 @@ export class NewFeatureService {
             eq(schema.newFeature.isActive, true),
             notInArray(schema.newFeature.id, dismissedFeatureIds)
           )
-        );
+        )
+        .orderBy(schema.newFeature.displayOrder);
     } else {
       features = await this.db
         .select()
         .from(schema.newFeature)
-        .where(eq(schema.newFeature.isActive, true));
+        .where(eq(schema.newFeature.isActive, true))
+        .orderBy(schema.newFeature.displayOrder);
     }
 
     return features.map(feature => ({
@@ -60,7 +63,7 @@ export class NewFeatureService {
       .select()
       .from(schema.newFeature)
       .where(eq(schema.newFeature.isActive, true))
-      .orderBy(schema.newFeature.dateCreated);
+      .orderBy(schema.newFeature.displayOrder);
 
     return features.map(feature => ({
       ...feature,
@@ -69,6 +72,12 @@ export class NewFeatureService {
   }
 
   static async createFeature(data: CreateNewFeatureData): Promise<NewFeature> {
+    const [result] = await this.db
+      .select({ maxOrder: max(schema.newFeature.displayOrder) })
+      .from(schema.newFeature);
+
+    const nextOrder = (result?.maxOrder ?? -1) + 1;
+
     const [newFeature] = await this.db
       .insert(schema.newFeature)
       .values({
@@ -76,6 +85,7 @@ export class NewFeatureService {
         selector: data.selector,
         title: data.title,
         description: data.description,
+        displayOrder: nextOrder,
       })
       .returning();
 
@@ -83,6 +93,15 @@ export class NewFeatureService {
       ...newFeature,
       dateCreatedFormatted: newFeature.dateCreated.toLocaleString('en-US')
     };
+  }
+
+  static async reorderFeatures(orderedIds: number[]): Promise<void> {
+    for (let i = 0; i < orderedIds.length; i++) {
+      await this.db
+        .update(schema.newFeature)
+        .set({ displayOrder: i })
+        .where(eq(schema.newFeature.id, orderedIds[i]));
+    }
   }
 
   static async dismissFeature(userId: number, featureId: number): Promise<void> {
@@ -161,7 +180,7 @@ export class NewFeatureService {
             notInArray(schema.newFeature.id, dismissedFeatureIds)
           )
         )
-        .orderBy(schema.newFeature.dateCreated);
+        .orderBy(schema.newFeature.displayOrder);
     } else {
       features = await this.db
         .select()
@@ -172,7 +191,7 @@ export class NewFeatureService {
             eq(schema.newFeature.page, pagePath)
           )
         )
-        .orderBy(schema.newFeature.dateCreated);
+        .orderBy(schema.newFeature.displayOrder);
     }
 
     return features.map(feature => ({

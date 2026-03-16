@@ -7,10 +7,10 @@
 
 @layer utilities {
   .rounded-card {
-    border-radius: 1.5rem 0.5rem 1.5rem 0.5rem;
+    border-radius: 1.5rem 0 1.5rem 0;
   }
   .rounded-card-alt {
-    border-radius: 0.5rem 1.5rem 0.5rem 1.5rem;
+    border-radius: 0 1.5rem 0 1.5rem;
   }
 }
 

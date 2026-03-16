@@ -30,6 +30,7 @@ export const newFeature = pgTable("new_feature", {
   description: varchar({ length: 1000 }).notNull(),
   dateCreated: timestamp().notNull().defaultNow(),
   isActive: boolean().notNull().default(true),
+  displayOrder: integer().notNull().default(0),
 });
 
 export const userFeatureDismissal = pgTable("user_feature_dismissal", {
