@@ -7,6 +7,7 @@ export default [
     route("/verify-email", "routes/verify-email.tsx"),
     layout("routes/layouts/auth-layout.tsx", [
         route("/api/dismiss-feature", "routes/api.dismiss-feature.tsx"),
+        route("/api/media-search", "routes/api.media-search.tsx"),
         layout("routes/layouts/feature-layout.tsx", [
             route("/dashboard", "routes/dashboard.tsx"),
             route("/settings", "routes/settings.tsx"),

@@ -10,7 +10,8 @@ import { Requests } from "~/components/Requests";
 import { FilteredItemsSection } from "~/components/FilteredItemsSection";
 import { SectionWrapper } from "~/components/SectionWrapper";
 import { Alert } from "~/components/Alert";
-import { FormInput, FormSelect } from "~/components/FormField";
+import { FormSelect } from "~/components/FormField";
+import { MediaSearchInput } from "~/components/MediaSearchInput";
 import { PageLayout } from "~/components/PageLayout";
 import { TabNav } from "~/components/TabNav";
 import { CsrfInput } from "~/components/CsrfInput";
@@ -85,6 +86,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 
 export default function Dashboard({ actionData, loaderData }: Route.ComponentProps) {
   const [activeTab, setActiveTab] = useState<"request" | "view">("request");
+  const [selectedMediaType, setSelectedMediaType] = useState("");
   const [showPending, setShowPending] = useState(true);
   const [showCompleted, setShowCompleted] = useState(true);
   const [showDeleted, setShowDeleted] = useState(false);
@@ -152,7 +154,13 @@ export default function Dashboard({ actionData, loaderData }: Route.ComponentPro
               <CsrfInput />
 
               <div>
-                <FormSelect name="mediaType" id="mediaType" required>
+                <FormSelect
+                  name="mediaType"
+                  id="mediaType"
+                  required
+                  value={selectedMediaType}
+                  onChange={(e) => setSelectedMediaType(e.target.value)}
+                >
                   <option value="">Select Media Type</option>
                   {requestMediaTypeEnum.enumValues.map((mediaType) => (
                     <option key={mediaType} value={mediaType}>
@@ -162,13 +170,13 @@ export default function Dashboard({ actionData, loaderData }: Route.ComponentPro
                 </FormSelect>
               </div>
               <div>
-                <FormInput
-                  type="text"
+                <MediaSearchInput
                   name="title"
                   id="title"
                   placeholder="Title"
                   maxLength={255}
                   required
+                  mediaType={selectedMediaType}
                 />
               </div>
               <Button
