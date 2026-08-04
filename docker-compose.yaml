@@ -2,6 +2,8 @@ services:
     app:
         build:
             context: .
+            target: development-dependencies-env
+        command: npm run dev
         container_name: app
         environment:
             NODE_ENV: development
