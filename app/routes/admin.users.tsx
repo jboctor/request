@@ -86,6 +86,28 @@ export async function action({ request, context }: Route.ActionArgs) {
         return { success: "User admin status updated" };
       }
 
+      case "edit-username": {
+        const userId = parseInt(formData.get("userId") as string);
+        const newUsername = formData.get("newUsername") as string;
+
+        if (!userId) return { error: "Invalid user ID" };
+
+        const updatedUsername = await UserService.updateUsername(userId, newUsername);
+
+        // Keep the session in sync if an admin renames their own account.
+        if (userId === currentUserId && context?.session?.user) {
+          context.session.user.username = updatedUsername;
+          await new Promise<void>((resolve, reject) => {
+            context.session.save((err) => {
+              if (err) reject(err);
+              else resolve();
+            });
+          });
+        }
+
+        return { success: `Username updated to '${updatedUsername}'` };
+      }
+
       case "reset-password": {
         const userId = parseInt(formData.get("userId") as string);
         const newPassword = formData.get("newPassword") as string;
@@ -153,6 +175,7 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
   const navigation = useNavigation();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showPasswordResetFor, setShowPasswordResetFor] = useState<{[key: number]: boolean}>({});
+  const [showUsernameEditFor, setShowUsernameEditFor] = useState<{[key: number]: boolean}>({});
   const [showActive, setShowActive] = useState(true);
   const [showDeleted, setShowDeleted] = useState(false);
   const [showAdmins, setShowAdmins] = useState(true);
@@ -164,6 +187,7 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
   useEffect(() => {
     if (actionData?.success) {
       setShowPasswordResetFor({});
+      setShowUsernameEditFor({});
     }
   }, [actionData?.success]);
 
@@ -353,6 +377,43 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
                             </div>
                           </Form>
                         </div>
+                      ) : !isDeleted && showUsernameEditFor[user.id] ? (
+                        // Show username edit form instead of buttons
+                        <div className="w-full">
+                          <Form method="post" className="flex flex-col gap-2">
+                            <CsrfInput />
+                            <input type="hidden" name="action" value="edit-username" />
+                            <input type="hidden" name="userId" value={user.id} />
+                            <FormInput
+                              type="text"
+                              name="newUsername"
+                              placeholder="Enter new username..."
+                              className="text-xs"
+                              required
+                              minLength={3}
+                              defaultValue={user.username}
+                              autoFocus
+                            />
+                            <div className="flex gap-1">
+                              <Button
+                                type="submit"
+                                variant="primary"
+                                loading={isSubmitting}
+                                className="text-xs px-2 py-1"
+                              >
+                                Save Username
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="info"
+                                onClick={() => setShowUsernameEditFor(prev => ({ ...prev, [user.id]: false }))}
+                                className="text-xs px-2 py-1"
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          </Form>
+                        </div>
                       ) : (
                         <>
                           <span className={`text-xs px-2 py-1 rounded-full border ${
@@ -394,6 +455,14 @@ export default function AdminUsers({ actionData, loaderData }: Route.ComponentPr
                                     {user.isAdmin ? "Remove Admin" : "Make Admin"}
                                   </Button>
                                 </Form>
+
+                                <Button
+                                  variant="info"
+                                  onClick={() => setShowUsernameEditFor(prev => ({ ...prev, [user.id]: true }))}
+                                  className="w-full sm:w-auto"
+                                >
+                                  Edit Username
+                                </Button>
 
                                 <Button
                                   variant="warning"

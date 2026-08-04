@@ -40,6 +40,22 @@ export const userFeatureDismissal = pgTable("user_feature_dismissal", {
   dateDismissed: timestamp().notNull().defaultNow(),
 });
 
+export const oauthConfig = pgTable("oauth_config", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  providerName: varchar({ length: 255 }).notNull().default("OAuth"),
+  clientId: varchar({ length: 500 }).notNull(),
+  clientSecret: varchar({ length: 500 }).notNull(),
+  authorizationUrl: varchar({ length: 1000 }).notNull(),
+  tokenUrl: varchar({ length: 1000 }).notNull(),
+  userInfoUrl: varchar({ length: 1000 }).notNull(),
+  scopes: varchar({ length: 500 }).notNull().default("openid email profile"),
+  usernameClaim: varchar({ length: 255 }).notNull().default("email"),
+  enabled: boolean().notNull().default(false),
+  autoCreateUsers: boolean().notNull().default(false),
+  dateCreated: timestamp().notNull().defaultNow(),
+  dateUpdated: timestamp(),
+});
+
 export const userEmail = pgTable("user_email", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   userId: integer().notNull().references(() => user.id).unique(),

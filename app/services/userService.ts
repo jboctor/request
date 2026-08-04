@@ -61,6 +61,29 @@ export class UserService {
     return newUser;
   }
 
+  static async updateUsername(userId: number, newUsername: string): Promise<string> {
+    const trimmed = newUsername.trim();
+
+    if (!trimmed || trimmed.length < 3) {
+      throw new Error("Username must be at least 3 characters long");
+    }
+
+    const existingUser = await this.db.query.user.findFirst({
+      where: eq(schema.user.username, trimmed),
+      columns: { id: true }
+    });
+
+    if (existingUser && existingUser.id !== userId) {
+      throw new Error(`User with username "${trimmed}" already exists`);
+    }
+
+    await this.db.update(schema.user)
+      .set({ username: trimmed })
+      .where(eq(schema.user.id, userId));
+
+    return trimmed;
+  }
+
   static async deleteUser(userId: number): Promise<void> {
     await this.db.update(schema.user)
       .set({ dateDeleted: new Date() })
