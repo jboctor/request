@@ -6,5 +6,6 @@ declare module "express-session" {
     lastValidated?: number;
     csrfToken?: string;
     loginAttempts?: number;
+    oauthState?: string;
   }
 }

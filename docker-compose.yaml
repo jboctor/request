@@ -2,6 +2,8 @@ services:
     app:
         build:
             context: .
+            target: development-dependencies-env
+        command: sh -c "if [ ! -d node_modules/vite ]; then npm ci; fi && npm run dev"
         container_name: app
         environment:
             NODE_ENV: development
@@ -14,6 +16,7 @@ services:
             - "24678:24678"
         volumes:
             - .:/app
+            - /app/node_modules
         depends_on:
             - database
             - redis

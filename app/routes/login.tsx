@@ -1,6 +1,7 @@
 import { AuthService } from "~/services/authService";
 import { Button } from "~/components/Button";
 import { UserService } from "~/services/userService";
+import { OAuthService } from "~/services/oauthService";
 import { Alert } from "~/components/Alert";
 import { FormInput } from "~/components/FormField";
 import { CsrfInput } from "~/components/CsrfInput";
@@ -22,10 +23,20 @@ export function meta({ matches }: Route.MetaArgs) {
 export async function loader({ context }: Route.LoaderArgs) {
   const user = context.session?.user;
   if (user?.id && user?.username) {
-    return { isAuthenticated: true };
+    return { isAuthenticated: true, oauth: null };
   }
 
-  return { isAuthenticated: false };
+  let oauth: { providerName: string } | null = null;
+  try {
+    const config = await OAuthService.getConfig();
+    if (config?.enabled) {
+      oauth = { providerName: config.providerName };
+    }
+  } catch (error) {
+    console.error("Error loading OAuth config:", error);
+  }
+
+  return { isAuthenticated: false, oauth };
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
@@ -168,6 +179,21 @@ export default function Home({ actionData, loaderData }: Route.ComponentProps) {
                 {navigation.state === "submitting" ? "Signing In..." : "Sign In"}
               </Button>
             </Form>
+            {loaderData?.oauth && (
+              <>
+                <div className="flex items-center gap-3 my-2">
+                  <span className="flex-1 h-px bg-gray-200 dark:bg-emerald-800/40" />
+                  <span className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">or</span>
+                  <span className="flex-1 h-px bg-gray-200 dark:bg-emerald-800/40" />
+                </div>
+                <a
+                  href="/auth/oauth"
+                  className="flex items-center justify-center w-full h-10 px-3 text-sm font-medium tracking-wide rounded-lg border border-gray-300 bg-gray-100 text-gray-700 dark:bg-black dark:border-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-900 transition-all duration-200 active:scale-95"
+                >
+                  Sign in with {loaderData.oauth.providerName}
+                </a>
+              </>
+            )}
             <div className="text-center mt-4">
               <Link to="/contact" className="text-sm text-green-600 dark:text-green-400 hover:underline">
                 Need help? Contact {adminName}

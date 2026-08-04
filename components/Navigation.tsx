@@ -38,6 +38,9 @@ export function Navigation({ className = "", ...props }: NavigationProps) {
       <Link to="/admin/features" className={linkClass("/admin/features")}>
         Features
       </Link>
+      <Link to="/admin/oauth" className={linkClass("/admin/oauth")}>
+        OAuth
+      </Link>
     </nav>
   );
 }
