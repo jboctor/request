@@ -10,7 +10,8 @@
     "dev": "dotenv -- node server.js",
     "start": "node server.js",
     "typecheck": "react-router typegen && tsc -b",
-    "cli": "dotenv -- tsx --tsconfig tsconfig.vite.json cli/manage-users.ts"
+    "cli": "dotenv -- tsx --tsconfig tsconfig.vite.json cli/manage-users.ts",
+    "create-admin": "dotenv -- tsx --tsconfig tsconfig.vite.json cli/manage-users.ts create --admin"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

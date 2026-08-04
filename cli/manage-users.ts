@@ -58,8 +58,10 @@ async function main() {
       }
 
       case "create": {
-        const username = args[1];
-        const password = args[2];
+        // Ignore flags when reading positional args so --admin can appear anywhere.
+        const positional = args.slice(1).filter((arg) => !arg.startsWith("--"));
+        const username = positional[0];
+        const password = positional[1];
         const isAdmin = args.includes("--admin");
 
         if (!username || !password) {
