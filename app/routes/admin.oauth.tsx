@@ -2,6 +2,7 @@ import type { Route } from "./+types/admin.oauth";
 import { useNavigation, Form } from "react-router";
 import { Button } from "~/components/Button";
 import { OAuthService } from "~/services/oauthService";
+import { requireAdminAction } from "~/services/authGuard";
 import { SectionWrapper } from "~/components/SectionWrapper";
 import { FormInput } from "~/components/FormField";
 import { PageLayout } from "~/components/PageLayout";
@@ -15,8 +16,11 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export async function action({ request }: Route.ActionArgs) {
+export async function action({ request, context }: Route.ActionArgs): Promise<{ error?: string; success?: string }> {
   const formData = await request.formData();
+
+  const denied = await requireAdminAction(context, formData);
+  if (denied) return denied;
 
   try {
     const providerName = (formData.get("providerName") as string)?.trim();
