@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigation, Form } from "react-router";
 import { Button } from "~/components/Button";
 import { UserService } from "~/services/userService";
+import { requireAdminAction } from "~/services/authGuard";
 import { RequestService } from "~/services/requestService";
 import { FilteredItemsSection } from "~/components/FilteredItemsSection";
 import { SectionWrapper } from "~/components/SectionWrapper";
@@ -19,6 +20,9 @@ export function meta({}: Route.MetaArgs) {
 
 export async function action({ request, context }: Route.ActionArgs) {
   const formData = await request.formData();
+
+  const denied = await requireAdminAction(context, formData);
+  if (denied) return denied;
 
   const action = formData.get("action") as string;
   const currentUserId = context?.session?.user?.id;

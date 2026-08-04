@@ -4,6 +4,7 @@ import { useNavigation, Form, useSubmit, useRouteLoaderData } from "react-router
 import { Button } from "~/components/Button";
 import { NewFeatureService } from "~/services/newFeatureService";
 import { UserService } from "~/services/userService";
+import { requireAdminAction } from "~/services/authGuard";
 import { FilteredItemsSection } from "~/components/FilteredItemsSection";
 import { SectionWrapper } from "~/components/SectionWrapper";
 import { FormInput, FormSelect, FormTextarea } from "~/components/FormField";
@@ -35,8 +36,12 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export async function action({ request }: Route.ActionArgs) {
+export async function action({ request, context }: Route.ActionArgs): Promise<{ error?: string; success?: string }> {
   const formData = await request.formData();
+
+  const denied = await requireAdminAction(context, formData);
+  if (denied) return denied;
+
   const action = formData.get("action") as string;
 
   try {

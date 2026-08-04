@@ -168,6 +168,18 @@ export class OAuthService {
 
     const username = rawUsername.trim();
 
+    // When linking by an email claim, require the provider to assert the
+    // address is verified. Otherwise someone could register at the IdP with an
+    // unverified email matching an existing username and take over that account.
+    if (config.usernameClaim === "email") {
+      const emailVerified = userInfo.email_verified;
+      if (emailVerified === false || emailVerified === "false") {
+        throw new Error(
+          "Your email address is not verified with the identity provider."
+        );
+      }
+    }
+
     const existing = await this.db.query.user.findFirst({
       where: eq(schema.user.username, username),
       columns: { id: true, username: true, isAdmin: true, dateDeleted: true },

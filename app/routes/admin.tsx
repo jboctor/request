@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigation, useFetcher, useRouteLoaderData } from "react-router";
 import { RequestService } from "~/services/requestService";
 import { RequestActionService } from "~/services/requestActionService";
+import { requireAdminAction } from "~/services/authGuard";
 import { Button } from "~/components/Button";
 import { Requests } from "~/components/Requests";
 import { FilteredItemsSection } from "~/components/FilteredItemsSection";
@@ -19,6 +20,9 @@ export function meta({ matches }: Route.MetaArgs) {
 
 export async function action({ request, context }: Route.ActionArgs) {
   const formData = await request.formData();
+
+  const denied = await requireAdminAction(context, formData);
+  if (denied) return denied;
 
   return await RequestActionService.handleFormAction(formData, undefined, true);
 }
